@@ -1,10 +1,13 @@
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from pathlib import Path
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 from app.core.db import get_db
 from app.models.task import DocumentTask, TaskStatus
-from app.schemas.task import TaskCreateResponse, TaskStatusResponse
+from app.schemas.task import TaskCreateResponse, TaskStatusResponse, TaskHistoryItem, TaskHistoryResponse
 from app.services.storage import save_input_file, get_output_path, get_report_path
 from app.services.validator import validate_source_document
 from app.services.gost_formatter import process_document
@@ -25,7 +28,7 @@ def create_task(
     discipline: str =  Form(...),
     db: Session = Depends(get_db),
 ):
-    if not file.filename.lower().endswith('.docx'):
+    if not file.filename or not file.filename.lower().endswith('.docx'):
         raise HTTPException(status_code=400, detail='Поддерживается только формат DOCX.')
 
     payload = {
@@ -51,12 +54,24 @@ def create_task(
     db.refresh(task)
 
     input_path = save_input_file(task.id, file)
+    if Path(input_path).stat().st_size == 0:
+        task.status = TaskStatus.FAILED
+        task.errors = ['Входной файл пустой.']
+        db.commit()
+        raise HTTPException(status_code=400, detail='Входной файл пустой.')
+
     output_path = get_output_path(task.id)
     report_path = get_report_path(task.id)
 
     task.input_path = input_path
 
-    validation = validate_source_document(input_path)
+    try:
+        validation = validate_source_document(input_path)
+    except Exception:
+        task.status = TaskStatus.FAILED
+        task.errors = ['Не удалось прочитать DOCX. Проверьте, что файл не поврежден.']
+        db.commit()
+        raise HTTPException(status_code=400, detail='Не удалось прочитать DOCX. Проверьте, что файл не поврежден.')
     if not validation['is_valid']:
         report = {
             'status': 'failed',
@@ -73,7 +88,13 @@ def create_task(
         db.commit()
         return TaskCreateResponse(task_id=task.id, status=task.status.value, report=report)
 
-    report = process_document(input_path, output_path, payload)
+    try:
+        report = process_document(input_path, output_path, payload)
+    except Exception:
+        task.status = TaskStatus.FAILED
+        task.errors = ['Ошибка обработки документа. Проверьте входной файл.']
+        db.commit()
+        raise HTTPException(status_code=400, detail='Ошибка обработки документа. Проверьте входной файл.')
     report['metrics'] = validation['metrics']
     report['warnings'].extend(validation['warnings'])
     save_report(report_path, report)
@@ -86,6 +107,27 @@ def create_task(
     db.commit()
 
     return TaskCreateResponse(task_id=task.id, status=task.status.value, report=report)
+
+
+@router.get('', response_model=TaskHistoryResponse)
+def list_tasks(
+    limit: int = Query(default=20, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    stmt = select(DocumentTask).order_by(DocumentTask.created_at.desc()).limit(limit)
+    tasks = db.execute(stmt).scalars().all()
+    items = [
+        TaskHistoryItem(
+            task_id=task.id,
+            status=task.status.value,
+            original_filename=task.original_filename,
+            created_at=task.created_at,
+            has_output=bool(task.output_path),
+            has_report=bool(task.report_path),
+        )
+        for task in tasks
+    ]
+    return TaskHistoryResponse(items=items)
 
 
 @router.get('/{task_id}', response_model=TaskStatusResponse)

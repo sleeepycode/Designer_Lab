@@ -5,3 +5,5 @@ pydantic
 pydantic-settings
 python-multipart
 python-docx
+pytest
+httpx

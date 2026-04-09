@@ -22,9 +22,9 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-## Эндпоинт создания
+## API
 
-`POST /tasks`
+### `POST /tasks`
 
 multipart/form-data:
 - `file`: исходный DOCX
@@ -34,8 +34,49 @@ multipart/form-data:
 - `lab_number`
 - `student_name`
 - `reviewer_name`
-- `supervisor_name`
-- `completion_date`
+- `discipline`
+
+Ответ:
+- `task_id`
+- `status` (`completed` или `failed`)
+- `report` (json-отчет о проверке/обработке)
+
+Ошибки:
+- `400 Поддерживается только формат DOCX.`
+- `400 Входной файл пустой.`
+- `400 Не удалось прочитать DOCX. Проверьте, что файл не поврежден.`
+
+### `GET /tasks/{task_id}`
+
+Возвращает статус задачи:
+- `task_id`
+- `status` (`created` / `completed` / `failed`)
+- `errors`, `warnings`
+- `has_output`, `has_report`
+
+### `GET /tasks`
+
+История задач для вкладки на фронте.
+
+Query params:
+- `limit` (по умолчанию `20`, максимум `100`)
+
+Ответ:
+- `items`: список задач (сначала новые), где у каждой:
+  - `task_id`
+  - `status`
+  - `original_filename`
+  - `created_at`
+  - `has_output`
+  - `has_report`
+
+### `GET /tasks/{task_id}/download`
+
+Скачивание итогового DOCX-файла.
+
+### `GET /tasks/{task_id}/report`
+
+Скачивание json-отчета обработки.
 
 ## Проверка валидности
 

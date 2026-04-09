@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 from pydantic import BaseModel, Field
 
@@ -25,3 +26,16 @@ class TaskStatusResponse(BaseModel):
     warnings: list[str] = []
     has_output: bool = False
     has_report: bool = False
+
+
+class TaskHistoryItem(BaseModel):
+    task_id: str
+    status: str
+    original_filename: str
+    created_at: datetime
+    has_output: bool
+    has_report: bool
+
+
+class TaskHistoryResponse(BaseModel):
+    items: list[TaskHistoryItem]
