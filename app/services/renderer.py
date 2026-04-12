@@ -38,54 +38,64 @@ def add_text_paragraph(doc: Document, text: str) -> None:
     format_paragraph_common(p)
 
 
-def add_centered_paragraph(doc: Document, text: str, bold: bool = False) -> None:
+def add_centered_paragraph(doc: Document, text: str, bold: bool = False, line_spacing: float = 1.0, space_before: float = 0, space_after: float = 0) -> None:
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p.paragraph_format.line_spacing = 1.15
+    p.paragraph_format.first_line_indent = Cm(0)
+    p.paragraph_format.line_spacing = line_spacing
+    p.paragraph_format.space_before = Pt(space_before)
+    p.paragraph_format.space_after = Pt(space_after)
     run = p.add_run(text)
     run.bold = bold
     set_run_font(run)
 
 
-def add_right_paragraph(doc: Document, text: str) -> None:
+def add_right_paragraph(doc: Document, text: str, line_spacing: float = 1.0, space_before: float = 0) -> None:
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    p.paragraph_format.line_spacing = 1.5
+    p.paragraph_format.first_line_indent = Cm(0)
+    p.paragraph_format.line_spacing = line_spacing
+    p.paragraph_format.space_before = Pt(space_before)
+    p.paragraph_format.space_after = Pt(0)
     run = p.add_run(text)
     set_run_font(run)
 
 
+def add_empty_line(doc: Document, line_spacing: float = 1.0) -> None:
+    p = doc.add_paragraph()
+    p.paragraph_format.line_spacing = line_spacing
+    p.paragraph_format.space_before = Pt(0)
+    p.paragraph_format.space_after = Pt(0)
+
+
 def build_title_page(doc: Document, payload: dict) -> None:
-    add_centered_paragraph(doc, settings.university_name, bold=True)
-    add_centered_paragraph(doc, payload["faculty"])
-    add_centered_paragraph(doc, payload["department"])
+    add_centered_paragraph(doc, settings.university_name, bold=True, line_spacing=1.0)
+    add_centered_paragraph(doc, f"Факультет «{payload['faculty']}»", line_spacing=1.0)
+    add_centered_paragraph(doc, f"Кафедра «{payload['department']}»", line_spacing=1.0)
 
-    doc.add_paragraph("")
-    doc.add_paragraph("")
+    add_empty_line(doc)
+    add_empty_line(doc)
 
-    add_centered_paragraph(doc, f"Отчет по лабораторной работе № {payload['lab_number']}", bold=True)
-    add_centered_paragraph(doc, f"по дисциплине «{payload['discipline']}»")
-    add_centered_paragraph(doc, "на тему:")
-    add_centered_paragraph(doc, f"«{payload['lab_title']}»")
+    add_centered_paragraph(doc, f"Отчет по лабораторной работе № {payload['lab_number']}", bold=True, line_spacing=1.0)
+    add_centered_paragraph(doc, f"по дисциплине «{payload['discipline']}»", line_spacing=1.0)
+    add_centered_paragraph(doc, "на тему:", line_spacing=1.0)
+    add_centered_paragraph(doc, f"«{payload['lab_title']}»", line_spacing=1.0)
 
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
+    add_empty_line(doc)
+    add_empty_line(doc)
+    add_empty_line(doc)
 
-    add_right_paragraph(doc, f"Выполнил: студент группы БПИ")
-    add_right_paragraph(doc, f"{payload['student_name']}")
-    add_right_paragraph(doc, f"Проверил:")
-    add_right_paragraph(doc, f"{payload['reviewer_name']}")
+    add_right_paragraph(doc, f"Выполнил: студент группы БПИ", line_spacing=1.0)
+    add_right_paragraph(doc, f"{payload['student_name']}", line_spacing=1.0)
+    add_right_paragraph(doc, f"Проверил:", line_spacing=1.0)
+    add_right_paragraph(doc, f"{payload['reviewer_name']}", line_spacing=1.0)
 
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
+    add_empty_line(doc)
+    add_empty_line(doc)
+    add_empty_line(doc)
 
-    add_centered_paragraph(doc, f"{settings.city}, {settings.year}")
-
-    doc.add_page_break()
+    add_centered_paragraph(doc, f"{settings.city}, {settings.year}", space_before=180)
+    doc.add_section(WD_SECTION.NEW_PAGE)
 
 
 def add_table_block(doc: Document, block: TableBlock) -> None:
