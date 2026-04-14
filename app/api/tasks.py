@@ -21,6 +21,7 @@ def create_task(
     file: UploadFile = File(...),
     faculty: str = Form(...),
     department: str = Form(...),
+    student_group: str = Form(...),
     lab_title: str = Form(...),
     lab_number: str = Form(...),
     student_name: str = Form(...),
@@ -34,6 +35,7 @@ def create_task(
     payload = {
         'faculty': faculty,
         'department': department,
+        'student_group': student_group,
         'lab_title': lab_title,
         'lab_number': lab_number,
         'student_name': student_name,

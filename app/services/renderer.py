@@ -85,7 +85,7 @@ def build_title_page(doc: Document, payload: dict) -> None:
     add_empty_line(doc)
     add_empty_line(doc)
 
-    add_right_paragraph(doc, f"Выполнил: студент группы БПИ", line_spacing=1.0)
+    add_right_paragraph(doc, f"Выполнил: студент группы {payload['student_group']}", line_spacing=1.0)
     add_right_paragraph(doc, f"{payload['student_name']}", line_spacing=1.0)
     add_right_paragraph(doc, f"Проверил:", line_spacing=1.0)
     add_right_paragraph(doc, f"{payload['reviewer_name']}", line_spacing=1.0)

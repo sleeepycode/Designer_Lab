@@ -8,6 +8,7 @@ class TitlePagePayload(BaseModel):
     department: str = Field(..., description='Кафедра')
     lab_title: str = Field(..., description='Название лабораторной работы')
     lab_number: str = Field(..., description='Номер лабораторной работы')
+    student_group: str = Field(..., description='Учебная группа студента')
     student_name: str = Field(..., description='ФИО студента')
     reviewer_name: str = Field(..., description='ФИО проверяющего')
     discipline: str = Field(..., description='Дисциплина')
