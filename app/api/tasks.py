@@ -7,7 +7,13 @@ from sqlalchemy import select
 
 from app.core.db import get_db
 from app.models.task import DocumentTask, TaskStatus
-from app.schemas.task import TaskCreateResponse, TaskStatusResponse, TaskHistoryItem, TaskHistoryResponse
+from app.schemas.task import (
+    TaskCreateResponse,
+    TaskStatusResponse,
+    TaskHistoryItem,
+    TaskHistoryResponse,
+    TaskDeleteResponse,
+)
 from app.services.storage import save_input_file, get_output_path, get_report_path
 from app.services.validator import validate_source_document
 from app.services.gost_formatter import process_document
@@ -19,6 +25,7 @@ router = APIRouter(prefix='/tasks', tags=['tasks'])
 @router.post('', response_model=TaskCreateResponse)
 def create_task(
     file: UploadFile = File(...),
+    user_id: str | None = Form(default=None),
     faculty: str = Form(...),
     department: str = Form(...),
     student_group: str = Form(...),
@@ -44,6 +51,7 @@ def create_task(
     }
 
     task = DocumentTask(
+        user_id=user_id,
         original_filename=file.filename,
         input_path='',
         payload=payload,
@@ -114,13 +122,18 @@ def create_task(
 @router.get('', response_model=TaskHistoryResponse)
 def list_tasks(
     limit: int = Query(default=20, ge=1, le=100),
+    user_id: str | None = Query(default=None),
     db: Session = Depends(get_db),
 ):
-    stmt = select(DocumentTask).order_by(DocumentTask.created_at.desc()).limit(limit)
+    stmt = select(DocumentTask)
+    if user_id:
+        stmt = stmt.where(DocumentTask.user_id == user_id)
+    stmt = stmt.order_by(DocumentTask.created_at.desc()).limit(limit)
     tasks = db.execute(stmt).scalars().all()
     items = [
         TaskHistoryItem(
             task_id=task.id,
+            user_id=task.user_id,
             status=task.status.value,
             original_filename=task.original_filename,
             created_at=task.created_at,
@@ -140,6 +153,7 @@ def get_task(task_id: str, db: Session = Depends(get_db)):
 
     return TaskStatusResponse(
         task_id=task.id,
+        user_id=task.user_id,
         status=task.status.value,
         errors=task.errors or [],
         warnings=task.warnings or [],
@@ -149,16 +163,57 @@ def get_task(task_id: str, db: Session = Depends(get_db)):
 
 
 @router.get('/{task_id}/download')
-def download_result(task_id: str, db: Session = Depends(get_db)):
+def download_result(
+    task_id: str,
+    user_id: str = Query(..., description='Идентификатор пользователя'),
+    db: Session = Depends(get_db),
+):
     task = db.get(DocumentTask, task_id)
     if not task or not task.output_path:
         raise HTTPException(status_code=404, detail='Готовый файл не найден.')
+    if not task.user_id:
+        raise HTTPException(status_code=403, detail='У задачи не задан владелец. Скачивание запрещено.')
+    if task.user_id != user_id:
+        raise HTTPException(status_code=403, detail='Нельзя скачать файл другой пользователя.')
     return FileResponse(task.output_path, media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document', filename=f'{task_id}.docx')
 
 
 @router.get('/{task_id}/report')
-def download_report(task_id: str, db: Session = Depends(get_db)):
+def download_report(
+    task_id: str,
+    user_id: str = Query(..., description='Идентификатор пользователя'),
+    db: Session = Depends(get_db),
+):
     task = db.get(DocumentTask, task_id)
     if not task or not task.report_path:
         raise HTTPException(status_code=404, detail='Отчёт не найден.')
+    if not task.user_id:
+        raise HTTPException(status_code=403, detail='У задачи не задан владелец. Скачивание отчёта запрещено.')
+    if task.user_id != user_id:
+        raise HTTPException(status_code=403, detail='Нельзя скачать отчёт другой пользователя.')
     return FileResponse(task.report_path, media_type='application/json', filename=f'{task_id}.json')
+
+
+@router.delete('/{task_id}', response_model=TaskDeleteResponse)
+def delete_task(
+    task_id: str,
+    user_id: str = Query(..., description='Идентификатор пользователя'),
+    db: Session = Depends(get_db),
+):
+    task = db.get(DocumentTask, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail='Задача не найдена.')
+    if not task.user_id:
+        raise HTTPException(status_code=403, detail='У задачи не задан владелец. Удаление запрещено.')
+    if task.user_id != user_id:
+        raise HTTPException(status_code=403, detail='Нельзя удалить задачу другого пользователя.')
+
+    for file_path in [task.input_path, task.output_path, task.report_path]:
+        if file_path:
+            path = Path(file_path)
+            if path.exists():
+                path.unlink()
+
+    db.delete(task)
+    db.commit()
+    return TaskDeleteResponse(task_id=task_id, status='deleted')

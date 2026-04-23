@@ -28,8 +28,10 @@ uvicorn app.main:app --reload
 
 multipart/form-data:
 - `file`: исходный DOCX
+- `user_id` (опционально, задел под будущую регистрацию)
 - `faculty`
 - `department`
+- `student_group`
 - `lab_title`
 - `lab_number`
 - `student_name`
@@ -46,6 +48,11 @@ multipart/form-data:
 - `400 Входной файл пустой.`
 - `400 Не удалось прочитать DOCX. Проверьте, что файл не поврежден.`
 
+Формат ошибки API (единый):
+- `code`: машинный код ошибки
+- `message`: текст ошибки для человека
+- `details`: дополнительная информация (если есть)
+
 ### `GET /tasks/{task_id}`
 
 Возвращает статус задачи:
@@ -60,10 +67,12 @@ multipart/form-data:
 
 Query params:
 - `limit` (по умолчанию `20`, максимум `100`)
+- `user_id` (опционально, фильтр истории по пользователю)
 
 Ответ:
 - `items`: список задач (сначала новые), где у каждой:
   - `task_id`
+  - `user_id`
   - `status`
   - `original_filename`
   - `created_at`
@@ -74,9 +83,28 @@ Query params:
 
 Скачивание итогового DOCX-файла.
 
+Query params:
+- `user_id` (обязателен; можно скачать только свой файл)
+
 ### `GET /tasks/{task_id}/report`
 
 Скачивание json-отчета обработки.
+
+Query params:
+- `user_id` (обязателен; можно скачать только свой отчёт)
+
+### `DELETE /tasks/{task_id}`
+
+Удаление задачи:
+- удаляет запись задачи из БД;
+- удаляет связанные файлы (input/output/report), если они существуют.
+
+Query params:
+- `user_id` (обязателен; можно удалить только свою задачу)
+
+Ответ:
+- `task_id`
+- `status` (`deleted`)
 
 ## Проверка валидности
 

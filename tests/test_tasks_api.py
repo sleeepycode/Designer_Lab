@@ -13,6 +13,13 @@ from app.core.db import Base, get_db
 from app.main import app
 
 
+def _error_message(resp) -> str:
+    body = resp.json()
+    if "message" in body:
+        return str(body["message"])
+    return str(body.get("detail", ""))
+
+
 @pytest.fixture()
 def client(tmp_path):
     settings.storage_dir = str(tmp_path / "storage")
@@ -43,8 +50,10 @@ def client(tmp_path):
 
 def _form_data():
     return {
+        "user_id": "demo-user-1",
         "faculty": "ФКТ",
         "department": "Кафедра ИС",
+        "student_group": "БПИ-01",
         "lab_title": "Тестирование API",
         "lab_number": "1",
         "student_name": "Иванов И.И.",
@@ -93,14 +102,14 @@ def test_create_task_success_and_artifacts_available(client: TestClient):
     assert status_data["has_output"] is True
     assert status_data["has_report"] is True
 
-    download_resp = client.get(f"/tasks/{task_id}/download")
+    download_resp = client.get(f"/tasks/{task_id}/download?user_id=demo-user-1")
     assert download_resp.status_code == 200
     assert (
         download_resp.headers["content-type"]
         == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
 
-    report_resp = client.get(f"/tasks/{task_id}/report")
+    report_resp = client.get(f"/tasks/{task_id}/report?user_id=demo-user-1")
     assert report_resp.status_code == 200
     assert report_resp.headers["content-type"].startswith("application/json")
 
@@ -115,7 +124,7 @@ def test_create_task_rejects_non_docx(client: TestClient):
     }
     resp = client.post("/tasks", data=_form_data(), files=files)
     assert resp.status_code == 400
-    assert "DOCX" in resp.json()["detail"]
+    assert "DOCX" in _error_message(resp)
 
 
 def test_create_task_rejects_empty_docx(client: TestClient):
@@ -128,7 +137,7 @@ def test_create_task_rejects_empty_docx(client: TestClient):
     }
     resp = client.post("/tasks", data=_form_data(), files=files)
     assert resp.status_code == 400
-    assert "пустой" in resp.json()["detail"].lower()
+    assert "пустой" in _error_message(resp).lower()
 
 
 def test_create_task_rejects_corrupted_docx(client: TestClient):
@@ -141,7 +150,7 @@ def test_create_task_rejects_corrupted_docx(client: TestClient):
     }
     resp = client.post("/tasks", data=_form_data(), files=files)
     assert resp.status_code == 400
-    assert "docx" in resp.json()["detail"].lower()
+    assert "docx" in _error_message(resp).lower()
 
 
 def test_create_task_fails_business_validation(client: TestClient):
@@ -187,7 +196,107 @@ def test_list_tasks_history_for_frontend(client: TestClient):
     first = body["items"][0]
     assert first["task_id"] == created_task_id
     assert "status" in first
+    assert "user_id" in first
     assert "original_filename" in first
     assert "created_at" in first
     assert "has_output" in first
     assert "has_report" in first
+
+
+def test_list_tasks_can_filter_by_user_id(client: TestClient):
+    files = {
+        "file": (
+            "valid.docx",
+            _valid_docx_bytes(),
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+    }
+
+    user1_data = _form_data()
+    user1_data["user_id"] = "user-1"
+    user2_data = _form_data()
+    user2_data["user_id"] = "user-2"
+
+    resp1 = client.post("/tasks", data=user1_data, files=files)
+    assert resp1.status_code == 200
+    task1 = resp1.json()["task_id"]
+
+    resp2 = client.post("/tasks", data=user2_data, files=files)
+    assert resp2.status_code == 200
+    task2 = resp2.json()["task_id"]
+
+    filtered_user1 = client.get("/tasks?limit=10&user_id=user-1")
+    assert filtered_user1.status_code == 200
+    items1 = filtered_user1.json()["items"]
+    assert items1
+    assert all(item["user_id"] == "user-1" for item in items1)
+    assert any(item["task_id"] == task1 for item in items1)
+    assert not any(item["task_id"] == task2 for item in items1)
+
+
+def test_delete_task_removes_db_record_and_files(client: TestClient):
+    files = {
+        "file": (
+            "valid.docx",
+            _valid_docx_bytes(),
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+    }
+    create_resp = client.post("/tasks", data=_form_data(), files=files)
+    assert create_resp.status_code == 200
+    task_id = create_resp.json()["task_id"]
+
+    status_before = client.get(f"/tasks/{task_id}")
+    assert status_before.status_code == 200
+    assert status_before.json()["has_output"] is True
+    assert status_before.json()["has_report"] is True
+
+    delete_resp = client.delete(f"/tasks/{task_id}?user_id=demo-user-1")
+    assert delete_resp.status_code == 200
+    delete_data = delete_resp.json()
+    assert delete_data["task_id"] == task_id
+    assert delete_data["status"] == "deleted"
+
+    status_after = client.get(f"/tasks/{task_id}")
+    assert status_after.status_code == 404
+
+
+def test_delete_unknown_task_returns_404(client: TestClient):
+    resp = client.delete("/tasks/not-existing-id?user_id=demo-user-1")
+    assert resp.status_code == 404
+
+
+def test_delete_task_forbidden_for_other_user(client: TestClient):
+    files = {
+        "file": (
+            "valid.docx",
+            _valid_docx_bytes(),
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+    }
+    create_resp = client.post("/tasks", data=_form_data(), files=files)
+    assert create_resp.status_code == 200
+    task_id = create_resp.json()["task_id"]
+
+    delete_resp = client.delete(f"/tasks/{task_id}?user_id=another-user")
+    assert delete_resp.status_code == 403
+    assert "другого пользователя" in _error_message(delete_resp).lower()
+
+
+def test_download_and_report_forbidden_for_other_user(client: TestClient):
+    files = {
+        "file": (
+            "valid.docx",
+            _valid_docx_bytes(),
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+    }
+    create_resp = client.post("/tasks", data=_form_data(), files=files)
+    assert create_resp.status_code == 200
+    task_id = create_resp.json()["task_id"]
+
+    download_resp = client.get(f"/tasks/{task_id}/download?user_id=another-user")
+    assert download_resp.status_code == 403
+
+    report_resp = client.get(f"/tasks/{task_id}/report?user_id=another-user")
+    assert report_resp.status_code == 403

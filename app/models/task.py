@@ -18,6 +18,7 @@ class DocumentTask(Base):
     __tablename__ = 'document_tasks'
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus), default=TaskStatus.CREATED, nullable=False)
     original_filename: Mapped[str] = mapped_column(String, nullable=False)
     input_path: Mapped[str] = mapped_column(String, nullable=False)
