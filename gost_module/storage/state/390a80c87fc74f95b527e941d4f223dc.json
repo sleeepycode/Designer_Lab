@@ -1,0 +1,3684 @@
+{
+  "document_id": "390a80c87fc74f95b527e941d4f223dc",
+  "working_path": "C:\\Users\\louze\\OneDrive\\Desktop\\gost_module\\storage\\documents\\390a80c87fc74f95b527e941d4f223dc\\working.docx",
+  "history": [],
+  "issues": [
+    {
+      "issue_id": "8c40a75d8c44476c8a080ce57cfdd859",
+      "rule_id": "body.first_line_indent",
+      "severity": "warning",
+      "message": "Неверный абзацный отступ",
+      "explanation": "Отступ первой строки основного текста должен быть 1.25 см.",
+      "paragraph_id": "p_19",
+      "preview": "Федоров Никита Павлович",
+      "actual": "None",
+      "expected": "1.25",
+      "can_auto_apply": true,
+      "fix_id": "295dc110aab24c85b7b40289e3b30e72"
+    },
+    {
+      "issue_id": "d90aadb661a14d11aee3f129b23f8773",
+      "rule_id": "body.first_line_indent",
+      "severity": "warning",
+      "message": "Неверный абзацный отступ",
+      "explanation": "Отступ первой строки основного текста должен быть 1.25 см.",
+      "paragraph_id": "p_21",
+      "preview": "Адедиха Коффи Жермен",
+      "actual": "None",
+      "expected": "1.25",
+      "can_auto_apply": true,
+      "fix_id": "b3bc7de7f57142748aac95c337eb90d1"
+    },
+    {
+      "issue_id": "e561e90fa150462b917684bc8a3f300d",
+      "rule_id": "body.first_line_indent",
+      "severity": "warning",
+      "message": "Неверный абзацный отступ",
+      "explanation": "Отступ первой строки основного текста должен быть 1.25 см.",
+      "paragraph_id": "p_30",
+      "preview": "Изучить способы разработки программ при помощи Apache Maven на языке Java.",
+      "actual": "None",
+      "expected": "1.25",
+      "can_auto_apply": true,
+      "fix_id": "a2177bc36f0940e9b156274c974bd4c2"
+    },
+    {
+      "issue_id": "490da7b72e2b4fc88e44d347da04c223",
+      "rule_id": "body.first_line_indent",
+      "severity": "warning",
+      "message": "Неверный абзацный отступ",
+      "explanation": "Отступ первой строки основного текста должен быть 1.25 см.",
+      "paragraph_id": "p_32",
+      "preview": "Задание 1:",
+      "actual": "None",
+      "expected": "1.25",
+      "can_auto_apply": true,
+      "fix_id": "6ba3d701bcda4bf7855f1a0f3d35000f"
+    },
+    {
+      "issue_id": "c93fdc92834c40c2a5d0460a85e926fa",
+      "rule_id": "body.first_line_indent",
+      "severity": "warning",
+      "message": "Неверный абзацный отступ",
+      "explanation": "Отступ первой строки основного текста должен быть 1.25 см.",
+      "paragraph_id": "p_33",
+      "preview": "В 1 задании необходимо создать базовый проект и настроить exec-maven-plugin.",
+      "actual": "None",
+      "expected": "1.25",
+      "can_auto_apply": true,
+      "fix_id": "03c25f1dfb8d4440b7482b398305f958"
+    },
+    {
+      "issue_id": "0ab8bfb2812e4901a0bc2f3fa9130225",
+      "rule_id": "body.first_line_indent",
+      "severity": "warning",
+      "message": "Неверный абзацный отступ",
+      "explanation": "Отступ первой строки основного текста должен быть 1.25 см.",
+      "paragraph_id": "p_36",
+      "preview": "Задание 2-3:",
+      "actual": "None",
+      "expected": "1.25",
+      "can_auto_apply": true,
+      "fix_id": "923e08db3db4416082be5c6fa825f4aa"
+    },
+    {
+      "issue_id": "b6cdb03d1b21494ba0bdef458e8bdf43",
+      "rule_id": "body.first_line_indent",
+      "severity": "warning",
+      "message": "Неверный абзацный отступ",
+      "explanation": "Отступ первой строки основного текста должен быть 1.25 см.",
+      "paragraph_id": "p_37",
+      "preview": "Необходимо добавить в проект зависимость для логирования Log4j и модифицировать класс Main для использования логирования",
+      "actual": "None",
+      "expected": "1.25",
+      "can_auto_apply": true,
+      "fix_id": "d58374e296a644b7a56a1678f14a1f67"
+    },
+    {
+      "issue_id": "ebef79dd85a94d9a9793ca3daf3ea9d7",
+      "rule_id": "body.first_line_indent",
+      "severity": "warning",
+      "message": "Неверный абзацный отступ",
+      "explanation": "Отступ первой строки основного текста должен быть 1.25 см.",
+      "paragraph_id": "p_39",
+      "preview": "Листинг 2 – Зависимости для логирования",
+      "actual": "None",
+      "expected": "1.25",
+      "can_auto_apply": true,
+      "fix_id": "5a52833117194da09d2e436ac439f5fa"
+    },
+    {
+      "issue_id": "95b8482fe76f4208b479c145c9fa4882",
+      "rule_id": "body.first_line_indent",
+      "severity": "warning",
+      "message": "Неверный абзацный отступ",
+      "explanation": "Отступ первой строки основного текста должен быть 1.25 см.",
+      "paragraph_id": "p_41",
+      "preview": "Листинг 3 – Модификация Main для использования логирования",
+      "actual": "None",
+      "expected": "1.25",
+      "can_auto_apply": true,
+      "fix_id": "559f048908f949f18c354ede1b2af2eb"
+    },
+    {
+      "issue_id": "ae74b59e87284be2b58b605f32e5ba7d",
+      "rule_id": "body.first_line_indent",
+      "severity": "warning",
+      "message": "Неверный абзацный отступ",
+      "explanation": "Отступ первой строки основного текста должен быть 1.25 см.",
+      "paragraph_id": "p_42",
+      "preview": "Задание 4–5:",
+      "actual": "None",
+      "expected": "1.25",
+      "can_auto_apply": true,
+      "fix_id": "fbef305997884da98480d2d7323f3a5c"
+    },
+    {
+      "issue_id": "48f66613e7a64c3fb00dfdf89b363ee8",
+      "rule_id": "body.first_line_indent",
+      "severity": "warning",
+      "message": "Неверный абзацный отступ",
+      "explanation": "Отступ первой строки основного текста должен быть 1.25 см.",
+      "paragraph_id": "p_43",
+      "preview": "Для выполнения необходимо добавить зависимость для работы с JSON и создать класс для сериализации/десериализации объекто",
+      "actual": "None",
+      "expected": "1.25",
+      "can_auto_apply": true,
+      "fix_id": "0692816d9d0246528f17fd2a69469af7"
+    },
+    {
+      "issue_id": "237670f35f494156a37d788535ffc8eb",
+      "rule_id": "body.first_line_indent",
+      "severity": "warning",
+      "message": "Неверный абзацный отступ",
+      "explanation": "Отступ первой строки основного текста должен быть 1.25 см.",
+      "paragraph_id": "p_45",
+      "preview": "В файл pom.xml была добавлена зависимость Jackson:",
+      "actual": "None",
+      "expected": "1.25",
+      "can_auto_apply": true,
+      "fix_id": "22823d4b5c414abea9b47eb7917b0819"
+    },
+    {
+      "issue_id": "cad55595a80944a48a82ade6e689fbb5",
+      "rule_id": "body.first_line_indent",
+      "severity": "warning",
+      "message": "Неверный абзацный отступ",
+      "explanation": "Отступ первой строки основного текста должен быть 1.25 см.",
+      "paragraph_id": "p_46",
+      "preview": "Листинг 4 – Измененный pom.xml",
+      "actual": "None",
+      "expected": "1.25",
+      "can_auto_apply": true,
+      "fix_id": "1d231b83364b41e7ae2488b8f80be45a"
+    },
+    {
+      "issue_id": "0c0f67b0c2d5487db99e1bee4c61a593",
+      "rule_id": "body.first_line_indent",
+      "severity": "warning",
+      "message": "Неверный абзацный отступ",
+      "explanation": "Отступ первой строки основного текста должен быть 1.25 см.",
+      "paragraph_id": "p_48",
+      "preview": "Создан класс Book (модель данных)",
+      "actual": "None",
+      "expected": "1.25",
+      "can_auto_apply": true,
+      "fix_id": "37ec7d43ab5d4de38442747e2e8455c2"
+    },
+    {
+      "issue_id": "86cd79100c374af7a4be8f9db713da0f",
+      "rule_id": "body.first_line_indent",
+      "severity": "warning",
+      "message": "Неверный абзацный отступ",
+      "explanation": "Отступ первой строки основного текста должен быть 1.25 см.",
+      "paragraph_id": "p_49",
+      "preview": "Листинг 5 – Класс Book",
+      "actual": "None",
+      "expected": "1.25",
+      "can_auto_apply": true,
+      "fix_id": "7bd55d8bc2ac4319805316bc6a80162c"
+    },
+    {
+      "issue_id": "34b4b8c9cedd48958e2c3642695f5dbc",
+      "rule_id": "body.first_line_indent",
+      "severity": "warning",
+      "message": "Неверный абзацный отступ",
+      "explanation": "Отступ первой строки основного текста должен быть 1.25 см.",
+      "paragraph_id": "p_51",
+      "preview": "Создан класс JsonUtils для работы с JSON",
+      "actual": "None",
+      "expected": "1.25",
+      "can_auto_apply": true,
+      "fix_id": "ccae80e9cc3c488eab1eb181950f9528"
+    },
+    {
+      "issue_id": "d45d4eec71dc420c9c3fd6ce7e38c189",
+      "rule_id": "body.first_line_indent",
+      "severity": "warning",
+      "message": "Неверный абзацный отступ",
+      "explanation": "Отступ первой строки основного текста должен быть 1.25 см.",
+      "paragraph_id": "p_52",
+      "preview": "Листинг 6 – Класс JsonUtils",
+      "actual": "None",
+      "expected": "1.25",
+      "can_auto_apply": true,
+      "fix_id": "859e421cc2774d75ac8388ae4c372bb1"
+    },
+    {
+      "issue_id": "cdf51dd8bc924da09917a3381858d62b",
+      "rule_id": "body.first_line_indent",
+      "severity": "warning",
+      "message": "Неверный абзацный отступ",
+      "explanation": "Отступ первой строки основного текста должен быть 1.25 см.",
+      "paragraph_id": "p_54",
+      "preview": "Задание 6:",
+      "actual": "None",
+      "expected": "1.25",
+      "can_auto_apply": true,
+      "fix_id": "51e087de6c30483f90b8e163cbd9b9a5"
+    },
+    {
+      "issue_id": "7428ccfc1b304ca48f2963cd3b1d6d33",
+      "rule_id": "body.first_line_indent",
+      "severity": "warning",
+      "message": "Неверный абзацный отступ",
+      "explanation": "Отступ первой строки основного текста должен быть 1.25 см.",
+      "paragraph_id": "p_55",
+      "preview": "Для выполнения необходимо добавить в секцию build плагин SpotBugs. Выполнить команду: mvn spotbugs:check. Проанализирова",
+      "actual": "None",
+      "expected": "1.25",
+      "can_auto_apply": true,
+      "fix_id": "66cec9e4bbf94ffc81ec4b55d722a5c1"
+    },
+    {
+      "issue_id": "56b05162c47f4490882c1891acbec874",
+      "rule_id": "body.line_spacing",
+      "severity": "warning",
+      "message": "Неверный межстрочный интервал",
+      "explanation": "Для основного текста должен использоваться интервал 1.5.",
+      "paragraph_id": "p_33",
+      "preview": "В 1 задании необходимо создать базовый проект и настроить exec-maven-plugin.",
+      "actual": "None",
+      "expected": "1.5",
+      "can_auto_apply": true,
+      "fix_id": "b5250fcf8474409d9d732bf6cea35114"
+    },
+    {
+      "issue_id": "b9464824d1f64560bc03b91b26624a95",
+      "rule_id": "body.line_spacing",
+      "severity": "warning",
+      "message": "Неверный межстрочный интервал",
+      "explanation": "Для основного текста должен использоваться интервал 1.5.",
+      "paragraph_id": "p_36",
+      "preview": "Задание 2-3:",
+      "actual": "None",
+      "expected": "1.5",
+      "can_auto_apply": true,
+      "fix_id": "4bf5b6d05cd14502b90dd5dd7bef8450"
+    },
+    {
+      "issue_id": "a4bbc63fdc564379b4f5d455f7838400",
+      "rule_id": "body.line_spacing",
+      "severity": "warning",
+      "message": "Неверный межстрочный интервал",
+      "explanation": "Для основного текста должен использоваться интервал 1.5.",
+      "paragraph_id": "p_37",
+      "preview": "Необходимо добавить в проект зависимость для логирования Log4j и модифицировать класс Main для использования логирования",
+      "actual": "None",
+      "expected": "1.5",
+      "can_auto_apply": true,
+      "fix_id": "d48239cbfd204ce4aa46a7c5afea832f"
+    },
+    {
+      "issue_id": "47dbbde312c54c3fb3620b13a15f9c93",
+      "rule_id": "body.line_spacing",
+      "severity": "warning",
+      "message": "Неверный межстрочный интервал",
+      "explanation": "Для основного текста должен использоваться интервал 1.5.",
+      "paragraph_id": "p_39",
+      "preview": "Листинг 2 – Зависимости для логирования",
+      "actual": "None",
+      "expected": "1.5",
+      "can_auto_apply": true,
+      "fix_id": "7cf27b34bb1f44e999122c2f8ba05e9c"
+    },
+    {
+      "issue_id": "44a939d899a644cebc6c753aa07e3509",
+      "rule_id": "body.line_spacing",
+      "severity": "warning",
+      "message": "Неверный межстрочный интервал",
+      "explanation": "Для основного текста должен использоваться интервал 1.5.",
+      "paragraph_id": "p_41",
+      "preview": "Листинг 3 – Модификация Main для использования логирования",
+      "actual": "None",
+      "expected": "1.5",
+      "can_auto_apply": true,
+      "fix_id": "4f069fb5be80471a87a273db7c9eeb4a"
+    },
+    {
+      "issue_id": "e70e19082e514991b8e1f1dd8d011fe4",
+      "rule_id": "body.line_spacing",
+      "severity": "warning",
+      "message": "Неверный межстрочный интервал",
+      "explanation": "Для основного текста должен использоваться интервал 1.5.",
+      "paragraph_id": "p_42",
+      "preview": "Задание 4–5:",
+      "actual": "None",
+      "expected": "1.5",
+      "can_auto_apply": true,
+      "fix_id": "a8dd96837136468a92f2bada7349f39e"
+    },
+    {
+      "issue_id": "a958c837f7494028ab18373b96a7bae3",
+      "rule_id": "body.line_spacing",
+      "severity": "warning",
+      "message": "Неверный межстрочный интервал",
+      "explanation": "Для основного текста должен использоваться интервал 1.5.",
+      "paragraph_id": "p_43",
+      "preview": "Для выполнения необходимо добавить зависимость для работы с JSON и создать класс для сериализации/десериализации объекто",
+      "actual": "None",
+      "expected": "1.5",
+      "can_auto_apply": true,
+      "fix_id": "a6427cd7eb4a40049dbdc0238316aadb"
+    },
+    {
+      "issue_id": "00826f3637724832b874377f7e1c2f24",
+      "rule_id": "body.line_spacing",
+      "severity": "warning",
+      "message": "Неверный межстрочный интервал",
+      "explanation": "Для основного текста должен использоваться интервал 1.5.",
+      "paragraph_id": "p_45",
+      "preview": "В файл pom.xml была добавлена зависимость Jackson:",
+      "actual": "None",
+      "expected": "1.5",
+      "can_auto_apply": true,
+      "fix_id": "f5142f0f51c94f20ad5259a3ee311c56"
+    },
+    {
+      "issue_id": "48aec9657ffd42a5af8267cef34f2a6d",
+      "rule_id": "body.line_spacing",
+      "severity": "warning",
+      "message": "Неверный межстрочный интервал",
+      "explanation": "Для основного текста должен использоваться интервал 1.5.",
+      "paragraph_id": "p_46",
+      "preview": "Листинг 4 – Измененный pom.xml",
+      "actual": "None",
+      "expected": "1.5",
+      "can_auto_apply": true,
+      "fix_id": "e937785b453143ea91e2767f2c6e218d"
+    },
+    {
+      "issue_id": "f3ff47d273bc4c3eac1d56eab26a6a13",
+      "rule_id": "body.line_spacing",
+      "severity": "warning",
+      "message": "Неверный межстрочный интервал",
+      "explanation": "Для основного текста должен использоваться интервал 1.5.",
+      "paragraph_id": "p_48",
+      "preview": "Создан класс Book (модель данных)",
+      "actual": "1.1583333333333334",
+      "expected": "1.5",
+      "can_auto_apply": true,
+      "fix_id": "8b67f07c66ab4365afe22b5ccef03b35"
+    },
+    {
+      "issue_id": "5b63eb90c8e84575b47157a276bebd70",
+      "rule_id": "body.line_spacing",
+      "severity": "warning",
+      "message": "Неверный межстрочный интервал",
+      "explanation": "Для основного текста должен использоваться интервал 1.5.",
+      "paragraph_id": "p_49",
+      "preview": "Листинг 5 – Класс Book",
+      "actual": "1.1583333333333334",
+      "expected": "1.5",
+      "can_auto_apply": true,
+      "fix_id": "3d0f2910bd0d4a788c247dcb999292cc"
+    },
+    {
+      "issue_id": "1d7349525bc7455ca47b8bab829cee1c",
+      "rule_id": "body.line_spacing",
+      "severity": "warning",
+      "message": "Неверный межстрочный интервал",
+      "explanation": "Для основного текста должен использоваться интервал 1.5.",
+      "paragraph_id": "p_51",
+      "preview": "Создан класс JsonUtils для работы с JSON",
+      "actual": "None",
+      "expected": "1.5",
+      "can_auto_apply": true,
+      "fix_id": "799838b4c9064fca98cce5a8bad12eae"
+    },
+    {
+      "issue_id": "c6670724289443e3a951909715a37dfc",
+      "rule_id": "body.line_spacing",
+      "severity": "warning",
+      "message": "Неверный межстрочный интервал",
+      "explanation": "Для основного текста должен использоваться интервал 1.5.",
+      "paragraph_id": "p_52",
+      "preview": "Листинг 6 – Класс JsonUtils",
+      "actual": "None",
+      "expected": "1.5",
+      "can_auto_apply": true,
+      "fix_id": "54a6fd1fdc274b9b90cc80231446871a"
+    },
+    {
+      "issue_id": "f47104c58d294179be6f14e5a166933e",
+      "rule_id": "body.line_spacing",
+      "severity": "warning",
+      "message": "Неверный межстрочный интервал",
+      "explanation": "Для основного текста должен использоваться интервал 1.5.",
+      "paragraph_id": "p_54",
+      "preview": "Задание 6:",
+      "actual": "None",
+      "expected": "1.5",
+      "can_auto_apply": true,
+      "fix_id": "adfaa340ede94621969a5e3cc6bd0fac"
+    },
+    {
+      "issue_id": "39bc9a6ed77048d6a0300b271a1aa254",
+      "rule_id": "body.line_spacing",
+      "severity": "warning",
+      "message": "Неверный межстрочный интервал",
+      "explanation": "Для основного текста должен использоваться интервал 1.5.",
+      "paragraph_id": "p_55",
+      "preview": "Для выполнения необходимо добавить в секцию build плагин SpotBugs. Выполнить команду: mvn spotbugs:check. Проанализирова",
+      "actual": "None",
+      "expected": "1.5",
+      "can_auto_apply": true,
+      "fix_id": "b98181d03f12485d9d22e1042e57d684"
+    },
+    {
+      "issue_id": "fac840fe9df64bc8b1bf496714a99f54",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал перед абзацем",
+      "explanation": "Интервал перед абзацем должен быть 0 pt.",
+      "paragraph_id": "p_19",
+      "preview": "Федоров Никита Павлович",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "7e0ef55a14b145a39806a95154bf4120"
+    },
+    {
+      "issue_id": "5884868cd686455a960776089c2fe6e8",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал перед абзацем",
+      "explanation": "Интервал перед абзацем должен быть 0 pt.",
+      "paragraph_id": "p_21",
+      "preview": "Адедиха Коффи Жермен",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "fa92eeca76c64abeb4155f595334673f"
+    },
+    {
+      "issue_id": "75d92ca091e14df988fe4aa27b9b0c33",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал перед абзацем",
+      "explanation": "Интервал перед абзацем должен быть 0 pt.",
+      "paragraph_id": "p_30",
+      "preview": "Изучить способы разработки программ при помощи Apache Maven на языке Java.",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "a4608f6c5daf408baeb022b18e6ccee6"
+    },
+    {
+      "issue_id": "b7cd51dca0eb4d65bf8f5624f4f0c887",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал перед абзацем",
+      "explanation": "Интервал перед абзацем должен быть 0 pt.",
+      "paragraph_id": "p_32",
+      "preview": "Задание 1:",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "59ae653ecbcc4537b71ecda3a9e1e097"
+    },
+    {
+      "issue_id": "f70a6647c841411a8c77389007f1d65e",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал перед абзацем",
+      "explanation": "Интервал перед абзацем должен быть 0 pt.",
+      "paragraph_id": "p_33",
+      "preview": "В 1 задании необходимо создать базовый проект и настроить exec-maven-plugin.",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "e88622720b074fcf9f67b3f5169fd46a"
+    },
+    {
+      "issue_id": "b35bdb9c186d4c2088572f84236023da",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал после абзаца",
+      "explanation": "Интервал после абзаца должен быть 0 pt.",
+      "paragraph_id": "p_33",
+      "preview": "В 1 задании необходимо создать базовый проект и настроить exec-maven-plugin.",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "c815ca75322c4b3ab53290710618ceea"
+    },
+    {
+      "issue_id": "5fba4bc3c8ca48e29e949b628d29462a",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал перед абзацем",
+      "explanation": "Интервал перед абзацем должен быть 0 pt.",
+      "paragraph_id": "p_36",
+      "preview": "Задание 2-3:",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "7029557e4d9141988b8aebb2cc0ee56f"
+    },
+    {
+      "issue_id": "f3e6e4fb192d4c208293c9b949f90ff0",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал после абзаца",
+      "explanation": "Интервал после абзаца должен быть 0 pt.",
+      "paragraph_id": "p_36",
+      "preview": "Задание 2-3:",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "d291db71805648ba90c3787d84ff6b44"
+    },
+    {
+      "issue_id": "d6290f39b49c4b21afab43c65068adeb",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал перед абзацем",
+      "explanation": "Интервал перед абзацем должен быть 0 pt.",
+      "paragraph_id": "p_37",
+      "preview": "Необходимо добавить в проект зависимость для логирования Log4j и модифицировать класс Main для использования логирования",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "777238c08e854c9c87a7139f32a1adce"
+    },
+    {
+      "issue_id": "274d55002eb842cbbb97ba460231fadf",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал после абзаца",
+      "explanation": "Интервал после абзаца должен быть 0 pt.",
+      "paragraph_id": "p_37",
+      "preview": "Необходимо добавить в проект зависимость для логирования Log4j и модифицировать класс Main для использования логирования",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "bbbb77218f454016809116d85d4f18ea"
+    },
+    {
+      "issue_id": "6a36b6f04733467db191566b2642e15d",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал перед абзацем",
+      "explanation": "Интервал перед абзацем должен быть 0 pt.",
+      "paragraph_id": "p_39",
+      "preview": "Листинг 2 – Зависимости для логирования",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "cd203b283c2e4368893e2bbd36eefd83"
+    },
+    {
+      "issue_id": "6756701eb85d4e62b06c16feb2acac0e",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал после абзаца",
+      "explanation": "Интервал после абзаца должен быть 0 pt.",
+      "paragraph_id": "p_39",
+      "preview": "Листинг 2 – Зависимости для логирования",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "e3e80b24ab1d46a8b4fba197be57daaa"
+    },
+    {
+      "issue_id": "148a61f8a0204c8fbede643718a4ae2e",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал перед абзацем",
+      "explanation": "Интервал перед абзацем должен быть 0 pt.",
+      "paragraph_id": "p_41",
+      "preview": "Листинг 3 – Модификация Main для использования логирования",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "e2ef49f46c54441882264633dcce1747"
+    },
+    {
+      "issue_id": "1b1e0dab03794877bc132281e76d93cd",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал после абзаца",
+      "explanation": "Интервал после абзаца должен быть 0 pt.",
+      "paragraph_id": "p_41",
+      "preview": "Листинг 3 – Модификация Main для использования логирования",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "e4ca1d9f8a9448589f4e941ac7c2877a"
+    },
+    {
+      "issue_id": "34b8d0008c9c4022afbf8e45b14d6700",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал перед абзацем",
+      "explanation": "Интервал перед абзацем должен быть 0 pt.",
+      "paragraph_id": "p_42",
+      "preview": "Задание 4–5:",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "27a8e4401b5344d3963810a92c9a5a56"
+    },
+    {
+      "issue_id": "08d736be771b4bf7a4325dafe18753ee",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал после абзаца",
+      "explanation": "Интервал после абзаца должен быть 0 pt.",
+      "paragraph_id": "p_42",
+      "preview": "Задание 4–5:",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "041c209196b44915bb28a768a40ad411"
+    },
+    {
+      "issue_id": "11703e51ec5d42a38392650e3a832496",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал перед абзацем",
+      "explanation": "Интервал перед абзацем должен быть 0 pt.",
+      "paragraph_id": "p_43",
+      "preview": "Для выполнения необходимо добавить зависимость для работы с JSON и создать класс для сериализации/десериализации объекто",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "8e6e762aec8c4d2c8dbd1942920027ce"
+    },
+    {
+      "issue_id": "c4c5812c8b8b490b83f2bbf80cc2a520",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал после абзаца",
+      "explanation": "Интервал после абзаца должен быть 0 pt.",
+      "paragraph_id": "p_43",
+      "preview": "Для выполнения необходимо добавить зависимость для работы с JSON и создать класс для сериализации/десериализации объекто",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "29173b5796b6459aa83e69baf06c972f"
+    },
+    {
+      "issue_id": "7042e8792ddb4df7861215114d1b3796",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал перед абзацем",
+      "explanation": "Интервал перед абзацем должен быть 0 pt.",
+      "paragraph_id": "p_45",
+      "preview": "В файл pom.xml была добавлена зависимость Jackson:",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "2fb5af26f0204b3a9879cf4927f14193"
+    },
+    {
+      "issue_id": "1efe3ffe20164334b9d647d5d72f089d",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал после абзаца",
+      "explanation": "Интервал после абзаца должен быть 0 pt.",
+      "paragraph_id": "p_45",
+      "preview": "В файл pom.xml была добавлена зависимость Jackson:",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "03aeb9a6d6d84d8c9716f7eb3681591a"
+    },
+    {
+      "issue_id": "495f7284de454b6899453578275be9c8",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал перед абзацем",
+      "explanation": "Интервал перед абзацем должен быть 0 pt.",
+      "paragraph_id": "p_46",
+      "preview": "Листинг 4 – Измененный pom.xml",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "7d8ca7998167457a90579133a859d380"
+    },
+    {
+      "issue_id": "57170ea0d54a45118e957a92335aa1fd",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал после абзаца",
+      "explanation": "Интервал после абзаца должен быть 0 pt.",
+      "paragraph_id": "p_46",
+      "preview": "Листинг 4 – Измененный pom.xml",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "8258b250370d433eadc3f2ca40a70041"
+    },
+    {
+      "issue_id": "b4e8f4aebabc41a88ef393ca19ff336d",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал перед абзацем",
+      "explanation": "Интервал перед абзацем должен быть 0 pt.",
+      "paragraph_id": "p_48",
+      "preview": "Создан класс Book (модель данных)",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "67cb89798c76408faebf778399b5cfaf"
+    },
+    {
+      "issue_id": "c595b1609bbc437390fb8aab361612f0",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал после абзаца",
+      "explanation": "Интервал после абзаца должен быть 0 pt.",
+      "paragraph_id": "p_48",
+      "preview": "Создан класс Book (модель данных)",
+      "actual": "8.0",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "8dfdeb1dc3884ed78f6339dffd49b5d5"
+    },
+    {
+      "issue_id": "f3761d855200405b8c4bf1cb5564869b",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал перед абзацем",
+      "explanation": "Интервал перед абзацем должен быть 0 pt.",
+      "paragraph_id": "p_49",
+      "preview": "Листинг 5 – Класс Book",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "cf296b504e2349398427932536fd6162"
+    },
+    {
+      "issue_id": "fbd6b6f9795e45bd9d451c97967311f1",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал после абзаца",
+      "explanation": "Интервал после абзаца должен быть 0 pt.",
+      "paragraph_id": "p_49",
+      "preview": "Листинг 5 – Класс Book",
+      "actual": "8.0",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "6194b901abf14ad2a7b82ea632bcd9f8"
+    },
+    {
+      "issue_id": "483303a502e843239b2668a3b01ec8f4",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал перед абзацем",
+      "explanation": "Интервал перед абзацем должен быть 0 pt.",
+      "paragraph_id": "p_51",
+      "preview": "Создан класс JsonUtils для работы с JSON",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "e9101296da6b493a99ca549ed21c8deb"
+    },
+    {
+      "issue_id": "9317040331b4489899f073f6614da72f",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал после абзаца",
+      "explanation": "Интервал после абзаца должен быть 0 pt.",
+      "paragraph_id": "p_51",
+      "preview": "Создан класс JsonUtils для работы с JSON",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "ea2ea90cd55b410ea8983a32dffd02f4"
+    },
+    {
+      "issue_id": "60612325d80b4f4e9af1dd1f1de230d7",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал перед абзацем",
+      "explanation": "Интервал перед абзацем должен быть 0 pt.",
+      "paragraph_id": "p_52",
+      "preview": "Листинг 6 – Класс JsonUtils",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "794d4793bc544313bd7a6adef8d12f60"
+    },
+    {
+      "issue_id": "4455cf9a2db14bc084969d7e54c16be3",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал после абзаца",
+      "explanation": "Интервал после абзаца должен быть 0 pt.",
+      "paragraph_id": "p_52",
+      "preview": "Листинг 6 – Класс JsonUtils",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "70fd619806ef4ffa86c86f6fc9542823"
+    },
+    {
+      "issue_id": "7d1ffaba1686462eb54041408376c4b6",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал перед абзацем",
+      "explanation": "Интервал перед абзацем должен быть 0 pt.",
+      "paragraph_id": "p_54",
+      "preview": "Задание 6:",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "803b7aec239c47f38fa5f93f5c97f18d"
+    },
+    {
+      "issue_id": "a586be8feb4b4ec18807767e7cbce135",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал после абзаца",
+      "explanation": "Интервал после абзаца должен быть 0 pt.",
+      "paragraph_id": "p_54",
+      "preview": "Задание 6:",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "5a2125fd0a01440fa72a79b102b1c025"
+    },
+    {
+      "issue_id": "3a6ed4c9f03048799c379bcffa3f1a61",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал перед абзацем",
+      "explanation": "Интервал перед абзацем должен быть 0 pt.",
+      "paragraph_id": "p_55",
+      "preview": "Для выполнения необходимо добавить в секцию build плагин SpotBugs. Выполнить команду: mvn spotbugs:check. Проанализирова",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "606fb93ed61a4d089b6caef076e923cb"
+    },
+    {
+      "issue_id": "5a466dc209534bfdb94e1dfb2c411f98",
+      "rule_id": "body.space_before_after",
+      "severity": "warning",
+      "message": "Неверный интервал после абзаца",
+      "explanation": "Интервал после абзаца должен быть 0 pt.",
+      "paragraph_id": "p_55",
+      "preview": "Для выполнения необходимо добавить в секцию build плагин SpotBugs. Выполнить команду: mvn spotbugs:check. Проанализирова",
+      "actual": "None",
+      "expected": "0.0",
+      "can_auto_apply": true,
+      "fix_id": "f71da98bbe3a408fa2662bc8ee176f86"
+    },
+    {
+      "issue_id": "527d531316464285b17a4dbed263f6d4",
+      "rule_id": "body.alignment",
+      "severity": "warning",
+      "message": "Неверное выравнивание абзаца",
+      "explanation": "Основной текст должен быть выровнен по ширине.",
+      "paragraph_id": "p_19",
+      "preview": "Федоров Никита Павлович",
+      "actual": "RIGHT (2)",
+      "expected": "JUSTIFY",
+      "can_auto_apply": true,
+      "fix_id": "d6b2011c3f014763a184e3164ada8e46"
+    },
+    {
+      "issue_id": "b9025e825f6c4ba9be146f79692ab629",
+      "rule_id": "body.alignment",
+      "severity": "warning",
+      "message": "Неверное выравнивание абзаца",
+      "explanation": "Основной текст должен быть выровнен по ширине.",
+      "paragraph_id": "p_21",
+      "preview": "Адедиха Коффи Жермен",
+      "actual": "RIGHT (2)",
+      "expected": "JUSTIFY",
+      "can_auto_apply": true,
+      "fix_id": "9a1044f6a24f41c3b29a9d0ef4cc69db"
+    },
+    {
+      "issue_id": "fb174514b3ec46c1b6ec8dd880556bc0",
+      "rule_id": "body.alignment",
+      "severity": "warning",
+      "message": "Неверное выравнивание абзаца",
+      "explanation": "Основной текст должен быть выровнен по ширине.",
+      "paragraph_id": "p_30",
+      "preview": "Изучить способы разработки программ при помощи Apache Maven на языке Java.",
+      "actual": "None",
+      "expected": "JUSTIFY",
+      "can_auto_apply": true,
+      "fix_id": "498515d9bf6544aa929884e382c99863"
+    },
+    {
+      "issue_id": "1b89c25735d549758ba9ad3d55e745a1",
+      "rule_id": "body.alignment",
+      "severity": "warning",
+      "message": "Неверное выравнивание абзаца",
+      "explanation": "Основной текст должен быть выровнен по ширине.",
+      "paragraph_id": "p_32",
+      "preview": "Задание 1:",
+      "actual": "None",
+      "expected": "JUSTIFY",
+      "can_auto_apply": true,
+      "fix_id": "e070ae5f10b646f9acfcdc069738b595"
+    },
+    {
+      "issue_id": "93f0d08d2f984a16a27e8db6bd19fad1",
+      "rule_id": "body.alignment",
+      "severity": "warning",
+      "message": "Неверное выравнивание абзаца",
+      "explanation": "Основной текст должен быть выровнен по ширине.",
+      "paragraph_id": "p_33",
+      "preview": "В 1 задании необходимо создать базовый проект и настроить exec-maven-plugin.",
+      "actual": "None",
+      "expected": "JUSTIFY",
+      "can_auto_apply": true,
+      "fix_id": "b24d87450382453bb2bb92d37e246a0d"
+    },
+    {
+      "issue_id": "4b8a9a277b19494ab3f4274619a46432",
+      "rule_id": "body.alignment",
+      "severity": "warning",
+      "message": "Неверное выравнивание абзаца",
+      "explanation": "Основной текст должен быть выровнен по ширине.",
+      "paragraph_id": "p_36",
+      "preview": "Задание 2-3:",
+      "actual": "None",
+      "expected": "JUSTIFY",
+      "can_auto_apply": true,
+      "fix_id": "68080cb226f44c7bb77870be65b4b172"
+    },
+    {
+      "issue_id": "6f1d3f18a4bd40a798a4b5b46436914f",
+      "rule_id": "body.alignment",
+      "severity": "warning",
+      "message": "Неверное выравнивание абзаца",
+      "explanation": "Основной текст должен быть выровнен по ширине.",
+      "paragraph_id": "p_37",
+      "preview": "Необходимо добавить в проект зависимость для логирования Log4j и модифицировать класс Main для использования логирования",
+      "actual": "None",
+      "expected": "JUSTIFY",
+      "can_auto_apply": true,
+      "fix_id": "d5cb07538d4e4741a96756d8480cf65a"
+    },
+    {
+      "issue_id": "e5f926a5199448c2a478385f1cd3c5bc",
+      "rule_id": "body.alignment",
+      "severity": "warning",
+      "message": "Неверное выравнивание абзаца",
+      "explanation": "Основной текст должен быть выровнен по ширине.",
+      "paragraph_id": "p_39",
+      "preview": "Листинг 2 – Зависимости для логирования",
+      "actual": "RIGHT (2)",
+      "expected": "JUSTIFY",
+      "can_auto_apply": true,
+      "fix_id": "3e6626b4392b4e4da6e2182569ddd7be"
+    },
+    {
+      "issue_id": "daf59e9e0c8b4292aab1df9240a855d4",
+      "rule_id": "body.alignment",
+      "severity": "warning",
+      "message": "Неверное выравнивание абзаца",
+      "explanation": "Основной текст должен быть выровнен по ширине.",
+      "paragraph_id": "p_41",
+      "preview": "Листинг 3 – Модификация Main для использования логирования",
+      "actual": "RIGHT (2)",
+      "expected": "JUSTIFY",
+      "can_auto_apply": true,
+      "fix_id": "2a60115c38ad49169168a986c6dd54a4"
+    },
+    {
+      "issue_id": "3436d84f66ce4c6b8740c6b35273288a",
+      "rule_id": "body.alignment",
+      "severity": "warning",
+      "message": "Неверное выравнивание абзаца",
+      "explanation": "Основной текст должен быть выровнен по ширине.",
+      "paragraph_id": "p_42",
+      "preview": "Задание 4–5:",
+      "actual": "None",
+      "expected": "JUSTIFY",
+      "can_auto_apply": true,
+      "fix_id": "2e48159f7a4449b9a60837d49a36d0de"
+    },
+    {
+      "issue_id": "9064923847c04ceda9e824fc4de0b859",
+      "rule_id": "body.alignment",
+      "severity": "warning",
+      "message": "Неверное выравнивание абзаца",
+      "explanation": "Основной текст должен быть выровнен по ширине.",
+      "paragraph_id": "p_43",
+      "preview": "Для выполнения необходимо добавить зависимость для работы с JSON и создать класс для сериализации/десериализации объекто",
+      "actual": "None",
+      "expected": "JUSTIFY",
+      "can_auto_apply": true,
+      "fix_id": "a5548fd85a594617b7d7670e98a77ae8"
+    },
+    {
+      "issue_id": "bf243024468e441f857c076d2b8ef270",
+      "rule_id": "body.alignment",
+      "severity": "warning",
+      "message": "Неверное выравнивание абзаца",
+      "explanation": "Основной текст должен быть выровнен по ширине.",
+      "paragraph_id": "p_45",
+      "preview": "В файл pom.xml была добавлена зависимость Jackson:",
+      "actual": "None",
+      "expected": "JUSTIFY",
+      "can_auto_apply": true,
+      "fix_id": "92400a53982c4e18abe832290a880d24"
+    },
+    {
+      "issue_id": "9a05a1a52ffd40b1a110dab3a5676594",
+      "rule_id": "body.alignment",
+      "severity": "warning",
+      "message": "Неверное выравнивание абзаца",
+      "explanation": "Основной текст должен быть выровнен по ширине.",
+      "paragraph_id": "p_46",
+      "preview": "Листинг 4 – Измененный pom.xml",
+      "actual": "RIGHT (2)",
+      "expected": "JUSTIFY",
+      "can_auto_apply": true,
+      "fix_id": "47b3e48f2cc3455889fe082f32121d1a"
+    },
+    {
+      "issue_id": "cb04d5241b9e4ef8acbb9a6e6a1ae7e2",
+      "rule_id": "body.alignment",
+      "severity": "warning",
+      "message": "Неверное выравнивание абзаца",
+      "explanation": "Основной текст должен быть выровнен по ширине.",
+      "paragraph_id": "p_48",
+      "preview": "Создан класс Book (модель данных)",
+      "actual": "None",
+      "expected": "JUSTIFY",
+      "can_auto_apply": true,
+      "fix_id": "08e6f3d89694429ca7b577e5f2bffcde"
+    },
+    {
+      "issue_id": "f75a917bacee40039964ae7b21913b8e",
+      "rule_id": "body.alignment",
+      "severity": "warning",
+      "message": "Неверное выравнивание абзаца",
+      "explanation": "Основной текст должен быть выровнен по ширине.",
+      "paragraph_id": "p_49",
+      "preview": "Листинг 5 – Класс Book",
+      "actual": "RIGHT (2)",
+      "expected": "JUSTIFY",
+      "can_auto_apply": true,
+      "fix_id": "5374eeb5964548db8197f40d90d86222"
+    },
+    {
+      "issue_id": "4258c53ce4fa4f8f924344812e6f5aed",
+      "rule_id": "body.alignment",
+      "severity": "warning",
+      "message": "Неверное выравнивание абзаца",
+      "explanation": "Основной текст должен быть выровнен по ширине.",
+      "paragraph_id": "p_51",
+      "preview": "Создан класс JsonUtils для работы с JSON",
+      "actual": "None",
+      "expected": "JUSTIFY",
+      "can_auto_apply": true,
+      "fix_id": "4b04cfe627714f5c8ce7df20f6b44a09"
+    },
+    {
+      "issue_id": "62486bd1820c43bc8bd9e75f3f2f61a8",
+      "rule_id": "body.alignment",
+      "severity": "warning",
+      "message": "Неверное выравнивание абзаца",
+      "explanation": "Основной текст должен быть выровнен по ширине.",
+      "paragraph_id": "p_52",
+      "preview": "Листинг 6 – Класс JsonUtils",
+      "actual": "RIGHT (2)",
+      "expected": "JUSTIFY",
+      "can_auto_apply": true,
+      "fix_id": "17a70cd715634f35b37da732f4e7a79a"
+    },
+    {
+      "issue_id": "81b9d51f589e49269997fcb794553570",
+      "rule_id": "body.alignment",
+      "severity": "warning",
+      "message": "Неверное выравнивание абзаца",
+      "explanation": "Основной текст должен быть выровнен по ширине.",
+      "paragraph_id": "p_54",
+      "preview": "Задание 6:",
+      "actual": "None",
+      "expected": "JUSTIFY",
+      "can_auto_apply": true,
+      "fix_id": "9465f7222abe4f6ebc9ff1296399b7f7"
+    },
+    {
+      "issue_id": "78f6da386ece4dae9122a2aaed28da35",
+      "rule_id": "body.alignment",
+      "severity": "warning",
+      "message": "Неверное выравнивание абзаца",
+      "explanation": "Основной текст должен быть выровнен по ширине.",
+      "paragraph_id": "p_55",
+      "preview": "Для выполнения необходимо добавить в секцию build плагин SpotBugs. Выполнить команду: mvn spotbugs:check. Проанализирова",
+      "actual": "None",
+      "expected": "JUSTIFY",
+      "can_auto_apply": true,
+      "fix_id": "84c2dd10b1b54aaaae8fb8e45738e755"
+    }
+  ],
+  "fixes": {
+    "295dc110aab24c85b7b40289e3b30e72": {
+      "fix_id": "295dc110aab24c85b7b40289e3b30e72",
+      "action": "set_first_line_indent",
+      "target_type": "paragraph",
+      "target_id": "p_19",
+      "old_value": "None",
+      "new_value": "1.25"
+    },
+    "b3bc7de7f57142748aac95c337eb90d1": {
+      "fix_id": "b3bc7de7f57142748aac95c337eb90d1",
+      "action": "set_first_line_indent",
+      "target_type": "paragraph",
+      "target_id": "p_21",
+      "old_value": "None",
+      "new_value": "1.25"
+    },
+    "a2177bc36f0940e9b156274c974bd4c2": {
+      "fix_id": "a2177bc36f0940e9b156274c974bd4c2",
+      "action": "set_first_line_indent",
+      "target_type": "paragraph",
+      "target_id": "p_30",
+      "old_value": "None",
+      "new_value": "1.25"
+    },
+    "6ba3d701bcda4bf7855f1a0f3d35000f": {
+      "fix_id": "6ba3d701bcda4bf7855f1a0f3d35000f",
+      "action": "set_first_line_indent",
+      "target_type": "paragraph",
+      "target_id": "p_32",
+      "old_value": "None",
+      "new_value": "1.25"
+    },
+    "03c25f1dfb8d4440b7482b398305f958": {
+      "fix_id": "03c25f1dfb8d4440b7482b398305f958",
+      "action": "set_first_line_indent",
+      "target_type": "paragraph",
+      "target_id": "p_33",
+      "old_value": "None",
+      "new_value": "1.25"
+    },
+    "923e08db3db4416082be5c6fa825f4aa": {
+      "fix_id": "923e08db3db4416082be5c6fa825f4aa",
+      "action": "set_first_line_indent",
+      "target_type": "paragraph",
+      "target_id": "p_36",
+      "old_value": "None",
+      "new_value": "1.25"
+    },
+    "d58374e296a644b7a56a1678f14a1f67": {
+      "fix_id": "d58374e296a644b7a56a1678f14a1f67",
+      "action": "set_first_line_indent",
+      "target_type": "paragraph",
+      "target_id": "p_37",
+      "old_value": "None",
+      "new_value": "1.25"
+    },
+    "5a52833117194da09d2e436ac439f5fa": {
+      "fix_id": "5a52833117194da09d2e436ac439f5fa",
+      "action": "set_first_line_indent",
+      "target_type": "paragraph",
+      "target_id": "p_39",
+      "old_value": "None",
+      "new_value": "1.25"
+    },
+    "559f048908f949f18c354ede1b2af2eb": {
+      "fix_id": "559f048908f949f18c354ede1b2af2eb",
+      "action": "set_first_line_indent",
+      "target_type": "paragraph",
+      "target_id": "p_41",
+      "old_value": "None",
+      "new_value": "1.25"
+    },
+    "fbef305997884da98480d2d7323f3a5c": {
+      "fix_id": "fbef305997884da98480d2d7323f3a5c",
+      "action": "set_first_line_indent",
+      "target_type": "paragraph",
+      "target_id": "p_42",
+      "old_value": "None",
+      "new_value": "1.25"
+    },
+    "0692816d9d0246528f17fd2a69469af7": {
+      "fix_id": "0692816d9d0246528f17fd2a69469af7",
+      "action": "set_first_line_indent",
+      "target_type": "paragraph",
+      "target_id": "p_43",
+      "old_value": "None",
+      "new_value": "1.25"
+    },
+    "22823d4b5c414abea9b47eb7917b0819": {
+      "fix_id": "22823d4b5c414abea9b47eb7917b0819",
+      "action": "set_first_line_indent",
+      "target_type": "paragraph",
+      "target_id": "p_45",
+      "old_value": "None",
+      "new_value": "1.25"
+    },
+    "1d231b83364b41e7ae2488b8f80be45a": {
+      "fix_id": "1d231b83364b41e7ae2488b8f80be45a",
+      "action": "set_first_line_indent",
+      "target_type": "paragraph",
+      "target_id": "p_46",
+      "old_value": "None",
+      "new_value": "1.25"
+    },
+    "37ec7d43ab5d4de38442747e2e8455c2": {
+      "fix_id": "37ec7d43ab5d4de38442747e2e8455c2",
+      "action": "set_first_line_indent",
+      "target_type": "paragraph",
+      "target_id": "p_48",
+      "old_value": "None",
+      "new_value": "1.25"
+    },
+    "7bd55d8bc2ac4319805316bc6a80162c": {
+      "fix_id": "7bd55d8bc2ac4319805316bc6a80162c",
+      "action": "set_first_line_indent",
+      "target_type": "paragraph",
+      "target_id": "p_49",
+      "old_value": "None",
+      "new_value": "1.25"
+    },
+    "ccae80e9cc3c488eab1eb181950f9528": {
+      "fix_id": "ccae80e9cc3c488eab1eb181950f9528",
+      "action": "set_first_line_indent",
+      "target_type": "paragraph",
+      "target_id": "p_51",
+      "old_value": "None",
+      "new_value": "1.25"
+    },
+    "859e421cc2774d75ac8388ae4c372bb1": {
+      "fix_id": "859e421cc2774d75ac8388ae4c372bb1",
+      "action": "set_first_line_indent",
+      "target_type": "paragraph",
+      "target_id": "p_52",
+      "old_value": "None",
+      "new_value": "1.25"
+    },
+    "51e087de6c30483f90b8e163cbd9b9a5": {
+      "fix_id": "51e087de6c30483f90b8e163cbd9b9a5",
+      "action": "set_first_line_indent",
+      "target_type": "paragraph",
+      "target_id": "p_54",
+      "old_value": "None",
+      "new_value": "1.25"
+    },
+    "66cec9e4bbf94ffc81ec4b55d722a5c1": {
+      "fix_id": "66cec9e4bbf94ffc81ec4b55d722a5c1",
+      "action": "set_first_line_indent",
+      "target_type": "paragraph",
+      "target_id": "p_55",
+      "old_value": "None",
+      "new_value": "1.25"
+    },
+    "b5250fcf8474409d9d732bf6cea35114": {
+      "fix_id": "b5250fcf8474409d9d732bf6cea35114",
+      "action": "set_line_spacing",
+      "target_type": "paragraph",
+      "target_id": "p_33",
+      "old_value": "None",
+      "new_value": "1.5"
+    },
+    "4bf5b6d05cd14502b90dd5dd7bef8450": {
+      "fix_id": "4bf5b6d05cd14502b90dd5dd7bef8450",
+      "action": "set_line_spacing",
+      "target_type": "paragraph",
+      "target_id": "p_36",
+      "old_value": "None",
+      "new_value": "1.5"
+    },
+    "d48239cbfd204ce4aa46a7c5afea832f": {
+      "fix_id": "d48239cbfd204ce4aa46a7c5afea832f",
+      "action": "set_line_spacing",
+      "target_type": "paragraph",
+      "target_id": "p_37",
+      "old_value": "None",
+      "new_value": "1.5"
+    },
+    "7cf27b34bb1f44e999122c2f8ba05e9c": {
+      "fix_id": "7cf27b34bb1f44e999122c2f8ba05e9c",
+      "action": "set_line_spacing",
+      "target_type": "paragraph",
+      "target_id": "p_39",
+      "old_value": "None",
+      "new_value": "1.5"
+    },
+    "4f069fb5be80471a87a273db7c9eeb4a": {
+      "fix_id": "4f069fb5be80471a87a273db7c9eeb4a",
+      "action": "set_line_spacing",
+      "target_type": "paragraph",
+      "target_id": "p_41",
+      "old_value": "None",
+      "new_value": "1.5"
+    },
+    "a8dd96837136468a92f2bada7349f39e": {
+      "fix_id": "a8dd96837136468a92f2bada7349f39e",
+      "action": "set_line_spacing",
+      "target_type": "paragraph",
+      "target_id": "p_42",
+      "old_value": "None",
+      "new_value": "1.5"
+    },
+    "a6427cd7eb4a40049dbdc0238316aadb": {
+      "fix_id": "a6427cd7eb4a40049dbdc0238316aadb",
+      "action": "set_line_spacing",
+      "target_type": "paragraph",
+      "target_id": "p_43",
+      "old_value": "None",
+      "new_value": "1.5"
+    },
+    "f5142f0f51c94f20ad5259a3ee311c56": {
+      "fix_id": "f5142f0f51c94f20ad5259a3ee311c56",
+      "action": "set_line_spacing",
+      "target_type": "paragraph",
+      "target_id": "p_45",
+      "old_value": "None",
+      "new_value": "1.5"
+    },
+    "e937785b453143ea91e2767f2c6e218d": {
+      "fix_id": "e937785b453143ea91e2767f2c6e218d",
+      "action": "set_line_spacing",
+      "target_type": "paragraph",
+      "target_id": "p_46",
+      "old_value": "None",
+      "new_value": "1.5"
+    },
+    "8b67f07c66ab4365afe22b5ccef03b35": {
+      "fix_id": "8b67f07c66ab4365afe22b5ccef03b35",
+      "action": "set_line_spacing",
+      "target_type": "paragraph",
+      "target_id": "p_48",
+      "old_value": "1.1583333333333334",
+      "new_value": "1.5"
+    },
+    "3d0f2910bd0d4a788c247dcb999292cc": {
+      "fix_id": "3d0f2910bd0d4a788c247dcb999292cc",
+      "action": "set_line_spacing",
+      "target_type": "paragraph",
+      "target_id": "p_49",
+      "old_value": "1.1583333333333334",
+      "new_value": "1.5"
+    },
+    "799838b4c9064fca98cce5a8bad12eae": {
+      "fix_id": "799838b4c9064fca98cce5a8bad12eae",
+      "action": "set_line_spacing",
+      "target_type": "paragraph",
+      "target_id": "p_51",
+      "old_value": "None",
+      "new_value": "1.5"
+    },
+    "54a6fd1fdc274b9b90cc80231446871a": {
+      "fix_id": "54a6fd1fdc274b9b90cc80231446871a",
+      "action": "set_line_spacing",
+      "target_type": "paragraph",
+      "target_id": "p_52",
+      "old_value": "None",
+      "new_value": "1.5"
+    },
+    "adfaa340ede94621969a5e3cc6bd0fac": {
+      "fix_id": "adfaa340ede94621969a5e3cc6bd0fac",
+      "action": "set_line_spacing",
+      "target_type": "paragraph",
+      "target_id": "p_54",
+      "old_value": "None",
+      "new_value": "1.5"
+    },
+    "b98181d03f12485d9d22e1042e57d684": {
+      "fix_id": "b98181d03f12485d9d22e1042e57d684",
+      "action": "set_line_spacing",
+      "target_type": "paragraph",
+      "target_id": "p_55",
+      "old_value": "None",
+      "new_value": "1.5"
+    },
+    "7e0ef55a14b145a39806a95154bf4120": {
+      "fix_id": "7e0ef55a14b145a39806a95154bf4120",
+      "action": "set_space_before",
+      "target_type": "paragraph",
+      "target_id": "p_19",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "fa92eeca76c64abeb4155f595334673f": {
+      "fix_id": "fa92eeca76c64abeb4155f595334673f",
+      "action": "set_space_before",
+      "target_type": "paragraph",
+      "target_id": "p_21",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "a4608f6c5daf408baeb022b18e6ccee6": {
+      "fix_id": "a4608f6c5daf408baeb022b18e6ccee6",
+      "action": "set_space_before",
+      "target_type": "paragraph",
+      "target_id": "p_30",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "59ae653ecbcc4537b71ecda3a9e1e097": {
+      "fix_id": "59ae653ecbcc4537b71ecda3a9e1e097",
+      "action": "set_space_before",
+      "target_type": "paragraph",
+      "target_id": "p_32",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "e88622720b074fcf9f67b3f5169fd46a": {
+      "fix_id": "e88622720b074fcf9f67b3f5169fd46a",
+      "action": "set_space_before",
+      "target_type": "paragraph",
+      "target_id": "p_33",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "c815ca75322c4b3ab53290710618ceea": {
+      "fix_id": "c815ca75322c4b3ab53290710618ceea",
+      "action": "set_space_after",
+      "target_type": "paragraph",
+      "target_id": "p_33",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "7029557e4d9141988b8aebb2cc0ee56f": {
+      "fix_id": "7029557e4d9141988b8aebb2cc0ee56f",
+      "action": "set_space_before",
+      "target_type": "paragraph",
+      "target_id": "p_36",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "d291db71805648ba90c3787d84ff6b44": {
+      "fix_id": "d291db71805648ba90c3787d84ff6b44",
+      "action": "set_space_after",
+      "target_type": "paragraph",
+      "target_id": "p_36",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "777238c08e854c9c87a7139f32a1adce": {
+      "fix_id": "777238c08e854c9c87a7139f32a1adce",
+      "action": "set_space_before",
+      "target_type": "paragraph",
+      "target_id": "p_37",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "bbbb77218f454016809116d85d4f18ea": {
+      "fix_id": "bbbb77218f454016809116d85d4f18ea",
+      "action": "set_space_after",
+      "target_type": "paragraph",
+      "target_id": "p_37",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "cd203b283c2e4368893e2bbd36eefd83": {
+      "fix_id": "cd203b283c2e4368893e2bbd36eefd83",
+      "action": "set_space_before",
+      "target_type": "paragraph",
+      "target_id": "p_39",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "e3e80b24ab1d46a8b4fba197be57daaa": {
+      "fix_id": "e3e80b24ab1d46a8b4fba197be57daaa",
+      "action": "set_space_after",
+      "target_type": "paragraph",
+      "target_id": "p_39",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "e2ef49f46c54441882264633dcce1747": {
+      "fix_id": "e2ef49f46c54441882264633dcce1747",
+      "action": "set_space_before",
+      "target_type": "paragraph",
+      "target_id": "p_41",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "e4ca1d9f8a9448589f4e941ac7c2877a": {
+      "fix_id": "e4ca1d9f8a9448589f4e941ac7c2877a",
+      "action": "set_space_after",
+      "target_type": "paragraph",
+      "target_id": "p_41",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "27a8e4401b5344d3963810a92c9a5a56": {
+      "fix_id": "27a8e4401b5344d3963810a92c9a5a56",
+      "action": "set_space_before",
+      "target_type": "paragraph",
+      "target_id": "p_42",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "041c209196b44915bb28a768a40ad411": {
+      "fix_id": "041c209196b44915bb28a768a40ad411",
+      "action": "set_space_after",
+      "target_type": "paragraph",
+      "target_id": "p_42",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "8e6e762aec8c4d2c8dbd1942920027ce": {
+      "fix_id": "8e6e762aec8c4d2c8dbd1942920027ce",
+      "action": "set_space_before",
+      "target_type": "paragraph",
+      "target_id": "p_43",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "29173b5796b6459aa83e69baf06c972f": {
+      "fix_id": "29173b5796b6459aa83e69baf06c972f",
+      "action": "set_space_after",
+      "target_type": "paragraph",
+      "target_id": "p_43",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "2fb5af26f0204b3a9879cf4927f14193": {
+      "fix_id": "2fb5af26f0204b3a9879cf4927f14193",
+      "action": "set_space_before",
+      "target_type": "paragraph",
+      "target_id": "p_45",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "03aeb9a6d6d84d8c9716f7eb3681591a": {
+      "fix_id": "03aeb9a6d6d84d8c9716f7eb3681591a",
+      "action": "set_space_after",
+      "target_type": "paragraph",
+      "target_id": "p_45",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "7d8ca7998167457a90579133a859d380": {
+      "fix_id": "7d8ca7998167457a90579133a859d380",
+      "action": "set_space_before",
+      "target_type": "paragraph",
+      "target_id": "p_46",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "8258b250370d433eadc3f2ca40a70041": {
+      "fix_id": "8258b250370d433eadc3f2ca40a70041",
+      "action": "set_space_after",
+      "target_type": "paragraph",
+      "target_id": "p_46",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "67cb89798c76408faebf778399b5cfaf": {
+      "fix_id": "67cb89798c76408faebf778399b5cfaf",
+      "action": "set_space_before",
+      "target_type": "paragraph",
+      "target_id": "p_48",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "8dfdeb1dc3884ed78f6339dffd49b5d5": {
+      "fix_id": "8dfdeb1dc3884ed78f6339dffd49b5d5",
+      "action": "set_space_after",
+      "target_type": "paragraph",
+      "target_id": "p_48",
+      "old_value": "8.0",
+      "new_value": "0.0"
+    },
+    "cf296b504e2349398427932536fd6162": {
+      "fix_id": "cf296b504e2349398427932536fd6162",
+      "action": "set_space_before",
+      "target_type": "paragraph",
+      "target_id": "p_49",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "6194b901abf14ad2a7b82ea632bcd9f8": {
+      "fix_id": "6194b901abf14ad2a7b82ea632bcd9f8",
+      "action": "set_space_after",
+      "target_type": "paragraph",
+      "target_id": "p_49",
+      "old_value": "8.0",
+      "new_value": "0.0"
+    },
+    "e9101296da6b493a99ca549ed21c8deb": {
+      "fix_id": "e9101296da6b493a99ca549ed21c8deb",
+      "action": "set_space_before",
+      "target_type": "paragraph",
+      "target_id": "p_51",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "ea2ea90cd55b410ea8983a32dffd02f4": {
+      "fix_id": "ea2ea90cd55b410ea8983a32dffd02f4",
+      "action": "set_space_after",
+      "target_type": "paragraph",
+      "target_id": "p_51",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "794d4793bc544313bd7a6adef8d12f60": {
+      "fix_id": "794d4793bc544313bd7a6adef8d12f60",
+      "action": "set_space_before",
+      "target_type": "paragraph",
+      "target_id": "p_52",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "70fd619806ef4ffa86c86f6fc9542823": {
+      "fix_id": "70fd619806ef4ffa86c86f6fc9542823",
+      "action": "set_space_after",
+      "target_type": "paragraph",
+      "target_id": "p_52",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "803b7aec239c47f38fa5f93f5c97f18d": {
+      "fix_id": "803b7aec239c47f38fa5f93f5c97f18d",
+      "action": "set_space_before",
+      "target_type": "paragraph",
+      "target_id": "p_54",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "5a2125fd0a01440fa72a79b102b1c025": {
+      "fix_id": "5a2125fd0a01440fa72a79b102b1c025",
+      "action": "set_space_after",
+      "target_type": "paragraph",
+      "target_id": "p_54",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "606fb93ed61a4d089b6caef076e923cb": {
+      "fix_id": "606fb93ed61a4d089b6caef076e923cb",
+      "action": "set_space_before",
+      "target_type": "paragraph",
+      "target_id": "p_55",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "f71da98bbe3a408fa2662bc8ee176f86": {
+      "fix_id": "f71da98bbe3a408fa2662bc8ee176f86",
+      "action": "set_space_after",
+      "target_type": "paragraph",
+      "target_id": "p_55",
+      "old_value": "None",
+      "new_value": "0.0"
+    },
+    "d6b2011c3f014763a184e3164ada8e46": {
+      "fix_id": "d6b2011c3f014763a184e3164ada8e46",
+      "action": "set_alignment_justify",
+      "target_type": "paragraph",
+      "target_id": "p_19",
+      "old_value": "RIGHT (2)",
+      "new_value": "JUSTIFY"
+    },
+    "9a1044f6a24f41c3b29a9d0ef4cc69db": {
+      "fix_id": "9a1044f6a24f41c3b29a9d0ef4cc69db",
+      "action": "set_alignment_justify",
+      "target_type": "paragraph",
+      "target_id": "p_21",
+      "old_value": "RIGHT (2)",
+      "new_value": "JUSTIFY"
+    },
+    "498515d9bf6544aa929884e382c99863": {
+      "fix_id": "498515d9bf6544aa929884e382c99863",
+      "action": "set_alignment_justify",
+      "target_type": "paragraph",
+      "target_id": "p_30",
+      "old_value": "None",
+      "new_value": "JUSTIFY"
+    },
+    "e070ae5f10b646f9acfcdc069738b595": {
+      "fix_id": "e070ae5f10b646f9acfcdc069738b595",
+      "action": "set_alignment_justify",
+      "target_type": "paragraph",
+      "target_id": "p_32",
+      "old_value": "None",
+      "new_value": "JUSTIFY"
+    },
+    "b24d87450382453bb2bb92d37e246a0d": {
+      "fix_id": "b24d87450382453bb2bb92d37e246a0d",
+      "action": "set_alignment_justify",
+      "target_type": "paragraph",
+      "target_id": "p_33",
+      "old_value": "None",
+      "new_value": "JUSTIFY"
+    },
+    "68080cb226f44c7bb77870be65b4b172": {
+      "fix_id": "68080cb226f44c7bb77870be65b4b172",
+      "action": "set_alignment_justify",
+      "target_type": "paragraph",
+      "target_id": "p_36",
+      "old_value": "None",
+      "new_value": "JUSTIFY"
+    },
+    "d5cb07538d4e4741a96756d8480cf65a": {
+      "fix_id": "d5cb07538d4e4741a96756d8480cf65a",
+      "action": "set_alignment_justify",
+      "target_type": "paragraph",
+      "target_id": "p_37",
+      "old_value": "None",
+      "new_value": "JUSTIFY"
+    },
+    "3e6626b4392b4e4da6e2182569ddd7be": {
+      "fix_id": "3e6626b4392b4e4da6e2182569ddd7be",
+      "action": "set_alignment_justify",
+      "target_type": "paragraph",
+      "target_id": "p_39",
+      "old_value": "RIGHT (2)",
+      "new_value": "JUSTIFY"
+    },
+    "2a60115c38ad49169168a986c6dd54a4": {
+      "fix_id": "2a60115c38ad49169168a986c6dd54a4",
+      "action": "set_alignment_justify",
+      "target_type": "paragraph",
+      "target_id": "p_41",
+      "old_value": "RIGHT (2)",
+      "new_value": "JUSTIFY"
+    },
+    "2e48159f7a4449b9a60837d49a36d0de": {
+      "fix_id": "2e48159f7a4449b9a60837d49a36d0de",
+      "action": "set_alignment_justify",
+      "target_type": "paragraph",
+      "target_id": "p_42",
+      "old_value": "None",
+      "new_value": "JUSTIFY"
+    },
+    "a5548fd85a594617b7d7670e98a77ae8": {
+      "fix_id": "a5548fd85a594617b7d7670e98a77ae8",
+      "action": "set_alignment_justify",
+      "target_type": "paragraph",
+      "target_id": "p_43",
+      "old_value": "None",
+      "new_value": "JUSTIFY"
+    },
+    "92400a53982c4e18abe832290a880d24": {
+      "fix_id": "92400a53982c4e18abe832290a880d24",
+      "action": "set_alignment_justify",
+      "target_type": "paragraph",
+      "target_id": "p_45",
+      "old_value": "None",
+      "new_value": "JUSTIFY"
+    },
+    "47b3e48f2cc3455889fe082f32121d1a": {
+      "fix_id": "47b3e48f2cc3455889fe082f32121d1a",
+      "action": "set_alignment_justify",
+      "target_type": "paragraph",
+      "target_id": "p_46",
+      "old_value": "RIGHT (2)",
+      "new_value": "JUSTIFY"
+    },
+    "08e6f3d89694429ca7b577e5f2bffcde": {
+      "fix_id": "08e6f3d89694429ca7b577e5f2bffcde",
+      "action": "set_alignment_justify",
+      "target_type": "paragraph",
+      "target_id": "p_48",
+      "old_value": "None",
+      "new_value": "JUSTIFY"
+    },
+    "5374eeb5964548db8197f40d90d86222": {
+      "fix_id": "5374eeb5964548db8197f40d90d86222",
+      "action": "set_alignment_justify",
+      "target_type": "paragraph",
+      "target_id": "p_49",
+      "old_value": "RIGHT (2)",
+      "new_value": "JUSTIFY"
+    },
+    "4b04cfe627714f5c8ce7df20f6b44a09": {
+      "fix_id": "4b04cfe627714f5c8ce7df20f6b44a09",
+      "action": "set_alignment_justify",
+      "target_type": "paragraph",
+      "target_id": "p_51",
+      "old_value": "None",
+      "new_value": "JUSTIFY"
+    },
+    "17a70cd715634f35b37da732f4e7a79a": {
+      "fix_id": "17a70cd715634f35b37da732f4e7a79a",
+      "action": "set_alignment_justify",
+      "target_type": "paragraph",
+      "target_id": "p_52",
+      "old_value": "RIGHT (2)",
+      "new_value": "JUSTIFY"
+    },
+    "9465f7222abe4f6ebc9ff1296399b7f7": {
+      "fix_id": "9465f7222abe4f6ebc9ff1296399b7f7",
+      "action": "set_alignment_justify",
+      "target_type": "paragraph",
+      "target_id": "p_54",
+      "old_value": "None",
+      "new_value": "JUSTIFY"
+    },
+    "84c2dd10b1b54aaaae8fb8e45738e755": {
+      "fix_id": "84c2dd10b1b54aaaae8fb8e45738e755",
+      "action": "set_alignment_justify",
+      "target_type": "paragraph",
+      "target_id": "p_55",
+      "old_value": "None",
+      "new_value": "JUSTIFY"
+    }
+  },
+  "last_analysis": {
+    "paragraphs": [
+      {
+        "id": "p_0",
+        "text": "МИНИСТЕРСТВО ЦИФРОВОГО РАЗВИТИЯ, СВЯЗИ И МАССОВЫХ КОММУНИКАЦИЙ РОССИЙСКОЙ ФЕДЕРАЦИИ",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "title_page",
+        "runs": [
+          {
+            "id": "r_0_0",
+            "text": "МИНИСТЕРСТВО ЦИФРОВОГО РАЗВИТИЯ, СВЯЗИ И МАССОВЫХ КОММУНИКАЦИЙ РОССИЙСКОЙ ФЕДЕРАЦИИ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_1",
+        "text": "Ордена трудового Красного Знамени федеральное государственное бюджетное",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "title_page",
+        "runs": [
+          {
+            "id": "r_1_0",
+            "text": "Ордена трудового Красного Знамени федеральное государственное бюджетное",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_2",
+        "text": "образовательное учреждение высшего образования",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "title_page",
+        "runs": [
+          {
+            "id": "r_2_0",
+            "text": "образовательное учреждение высшего образования",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_3",
+        "text": "«Московский технический университет связи и информатики»",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "title_page",
+        "runs": [
+          {
+            "id": "r_3_0",
+            "text": "«Московский технический университет связи и информатики»",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_4",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_5",
+        "text": "Кафедра «Математическая кибернетика и информационные технологии»",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "title_page",
+        "runs": [
+          {
+            "id": "r_5_0",
+            "text": "Кафедра ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_5_1",
+            "text": "«",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_5_2",
+            "text": "Математическая кибернетика и информационные технологии",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_5_3",
+            "text": "»",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_6",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_7",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_8",
+        "text": "Отчет по лабораторной работе №1",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "title_page",
+        "runs": [
+          {
+            "id": "r_8_0",
+            "text": "Отчет по лабораторной работе №",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          },
+          {
+            "id": "r_8_1",
+            "text": "1",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_9",
+        "text": "по дисциплине «Информационные технологии и программирование»",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "title_page",
+        "runs": [
+          {
+            "id": "r_9_0",
+            "text": "по дисциплине «",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_9_1",
+            "text": "Информационные технологии и программирование",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_9_2",
+            "text": "»",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_10",
+        "text": "на тему:",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "title_page",
+        "runs": [
+          {
+            "id": "r_10_0",
+            "text": "на тему:",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_11",
+        "text": "«Инструмент сборки Maven»",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "title_page",
+        "runs": [
+          {
+            "id": "r_11_0",
+            "text": "«",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_11_1",
+            "text": "Инструмент сборки ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_11_2",
+            "text": "Maven",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_11_3",
+            "text": "»",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_12",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_13",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_14",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_15",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_16",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_17",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_18",
+        "text": "Выполнил: студент группы _БПИ2404",
+        "style_name": "Normal",
+        "alignment": "RIGHT (2)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "title_page",
+        "runs": [
+          {
+            "id": "r_18_0",
+            "text": "Выполнил: студент группы _",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_18_1",
+            "text": "БПИ2404",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_19",
+        "text": "Федоров Никита Павлович",
+        "style_name": "Normal",
+        "alignment": "RIGHT (2)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "body",
+        "runs": [
+          {
+            "id": "r_19_0",
+            "text": "Федоров Никита Павлович",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_20",
+        "text": "Проверил:",
+        "style_name": "Normal",
+        "alignment": "RIGHT (2)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "title_page",
+        "runs": [
+          {
+            "id": "r_20_0",
+            "text": "Проверил:",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_21",
+        "text": "Адедиха Коффи Жермен",
+        "style_name": "Normal",
+        "alignment": "RIGHT (2)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "body",
+        "runs": [
+          {
+            "id": "r_21_0",
+            "text": "Адедиха",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_21_1",
+            "text": " Коффи Жермен",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_22",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": "JUSTIFY (3)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_23",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": "JUSTIFY (3)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_24",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": "JUSTIFY (3)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_25",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": "JUSTIFY (3)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_26",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": "JUSTIFY (3)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_27",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": "JUSTIFY (3)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_28",
+        "text": "Москва, 2026",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "heading",
+        "runs": [
+          {
+            "id": "r_28_0",
+            "text": "Москва, 202",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_28_1",
+            "text": "6",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_29",
+        "text": "Цель работы:",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "heading",
+        "runs": [
+          {
+            "id": "r_29_0",
+            "text": "Цель работы",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          },
+          {
+            "id": "r_29_1",
+            "text": ":",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_30",
+        "text": "Изучить способы разработки программ при помощи Apache Maven на языке Java.",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "body",
+        "runs": [
+          {
+            "id": "r_30_0",
+            "text": "Изучить способы ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_30_1",
+            "text": "р",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_30_2",
+            "text": "азработки программ при помощи ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_30_3",
+            "text": "Apache",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_30_4",
+            "text": " ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_30_5",
+            "text": "Maven",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_30_6",
+            "text": " на языке ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_30_7",
+            "text": "Java",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_30_8",
+            "text": ".",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_31",
+        "text": "Ход работы:",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "heading",
+        "runs": [
+          {
+            "id": "r_31_0",
+            "text": "Ход работы",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          },
+          {
+            "id": "r_31_1",
+            "text": ":",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_32",
+        "text": "Задание 1:",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": 1.5,
+        "space_before_pt": null,
+        "space_after_pt": 0.0,
+        "block_type": "body",
+        "runs": [
+          {
+            "id": "r_32_0",
+            "text": "Задание 1:",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_33",
+        "text": "В 1 задании необходимо создать базовый проект и настроить exec-maven-plugin.",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "body",
+        "runs": [
+          {
+            "id": "r_33_0",
+            "text": "В 1 задании необходимо ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_33_1",
+            "text": "с",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_33_2",
+            "text": "озда",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_33_3",
+            "text": "ть ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_33_4",
+            "text": "базовый проект и настро",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_33_5",
+            "text": "ить",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_33_6",
+            "text": " ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_33_7",
+            "text": "exec-maven-plugin",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_33_8",
+            "text": ".",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_34",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "empty",
+        "runs": [
+          {
+            "id": "r_34_0",
+            "text": "",
+            "font_name": null,
+            "font_size_pt": null,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_35",
+        "text": "Рисунок 1 – Базовый pom.xml",
+        "style_name": "Normal",
+        "alignment": "CENTER (1)",
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "heading",
+        "runs": [
+          {
+            "id": "r_35_0",
+            "text": "Рисунок 1 – Базовый ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_35_1",
+            "text": "pom",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_35_2",
+            "text": ".",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_35_3",
+            "text": "xml",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_36",
+        "text": "Задание 2-3:",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "body",
+        "runs": [
+          {
+            "id": "r_36_0",
+            "text": "Задание ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          },
+          {
+            "id": "r_36_1",
+            "text": "2",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          },
+          {
+            "id": "r_36_2",
+            "text": "-3",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          },
+          {
+            "id": "r_36_3",
+            "text": ":",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_37",
+        "text": "Необходимо добавить в проект зависимость для логирования Log4j и модифицировать класс Main для использования логирования вместо System.out. Для этого добавим зависимости как в Листинг 2",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "body",
+        "runs": [
+          {
+            "id": "r_37_0",
+            "text": "Необходимо добавить в проект ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_37_1",
+            "text": "зависимость для логирования ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_37_2",
+            "text": "Log",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_37_3",
+            "text": "4",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_37_4",
+            "text": "j",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_37_5",
+            "text": " ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_37_6",
+            "text": "и",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_37_7",
+            "text": " м",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_37_8",
+            "text": "одифицир",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_37_9",
+            "text": "овать",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_37_10",
+            "text": " класс ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_37_11",
+            "text": "Main",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_37_12",
+            "text": " для использования логирования вместо ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_37_13",
+            "text": "System.out",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_37_14",
+            "text": ". ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_37_15",
+            "text": "Для этого ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_37_16",
+            "text": "добавим зависимости как в Листинг 2",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_38",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_39",
+        "text": "Листинг 2 – Зависимости для логирования",
+        "style_name": "Normal",
+        "alignment": "RIGHT (2)",
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "body",
+        "runs": [
+          {
+            "id": "r_39_0",
+            "text": "Листинг 2 ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_39_1",
+            "text": "–",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_39_2",
+            "text": " ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_39_3",
+            "text": "Зависимости для логирования",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_40",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_41",
+        "text": "Листинг 3 – Модификация Main для использования логирования",
+        "style_name": "Normal",
+        "alignment": "RIGHT (2)",
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "body",
+        "runs": [
+          {
+            "id": "r_41_0",
+            "text": "Листинг 3 ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_41_1",
+            "text": "–",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_41_2",
+            "text": " ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_41_3",
+            "text": "Модификация ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_41_4",
+            "text": "Main",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_41_5",
+            "text": " для использования логирования",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_42",
+        "text": "Задание 4–5:",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "body",
+        "runs": [
+          {
+            "id": "r_42_0",
+            "text": "Задание ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          },
+          {
+            "id": "r_42_1",
+            "text": "4–5",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          },
+          {
+            "id": "r_42_2",
+            "text": ":",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_43",
+        "text": "Для выполнения необходимо добавить зависимость для работы с JSON и создать класс для сериализации/десериализации объектов в JSON. Также посмотреть какие транзитивные зависимости появились у проекта.",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "body",
+        "runs": [
+          {
+            "id": "r_43_0",
+            "text": "Для выполнения необходимо д",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_43_1",
+            "text": "обав",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_43_2",
+            "text": "ить",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_43_3",
+            "text": " зависимость для работы с JSON",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_43_4",
+            "text": " и с",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_43_5",
+            "text": "озда",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_43_6",
+            "text": "ть",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_43_7",
+            "text": " класс для сериализации/",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_43_8",
+            "text": "десериализации",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_43_9",
+            "text": " объектов в JSON. ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_43_10",
+            "text": "Также п",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_43_11",
+            "text": "осмотр",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_43_12",
+            "text": "еть",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_43_13",
+            "text": " какие транзитивные зависимости появились у проекта",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_43_14",
+            "text": ".",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_44",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_45",
+        "text": "В файл pom.xml была добавлена зависимость Jackson:",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "body",
+        "runs": [
+          {
+            "id": "r_45_0",
+            "text": "В файл pom.xml была добавлена зависимость ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_45_1",
+            "text": "Jackson",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_45_2",
+            "text": ":",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_46",
+        "text": "Листинг 4 – Измененный pom.xml",
+        "style_name": "Normal",
+        "alignment": "RIGHT (2)",
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "body",
+        "runs": [
+          {
+            "id": "r_46_0",
+            "text": "Листинг",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_46_1",
+            "text": " 4",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_46_2",
+            "text": " – Измененный ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_46_3",
+            "text": "pom.xml",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_47",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_48",
+        "text": "Создан класс Book (модель данных)",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": 1.1583333333333334,
+        "space_before_pt": null,
+        "space_after_pt": 8.0,
+        "block_type": "body",
+        "runs": [
+          {
+            "id": "r_48_0",
+            "text": "Создан класс Book (модель данных)",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_49",
+        "text": "Листинг 5 – Класс Book",
+        "style_name": "Normal",
+        "alignment": "RIGHT (2)",
+        "first_line_indent_cm": null,
+        "line_spacing": 1.1583333333333334,
+        "space_before_pt": null,
+        "space_after_pt": 8.0,
+        "block_type": "body",
+        "runs": [
+          {
+            "id": "r_49_0",
+            "text": "Листинг 5 – Класс ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_49_1",
+            "text": "Book",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_50",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_51",
+        "text": "Создан класс JsonUtils для работы с JSON",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "body",
+        "runs": [
+          {
+            "id": "r_51_0",
+            "text": "Создан класс ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_51_1",
+            "text": "JsonUtils",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_51_2",
+            "text": " для работы с JSON",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_52",
+        "text": "Листинг 6 – Класс JsonUtils",
+        "style_name": "Normal",
+        "alignment": "RIGHT (2)",
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "body",
+        "runs": [
+          {
+            "id": "r_52_0",
+            "text": "Листинг 6 – Класс ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_52_1",
+            "text": "JsonUtils",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_53",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_54",
+        "text": "Задание 6:",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "body",
+        "runs": [
+          {
+            "id": "r_54_0",
+            "text": "Задание 6",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          },
+          {
+            "id": "r_54_1",
+            "text": ":",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": true,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_55",
+        "text": "Для выполнения необходимо добавить в секцию build плагин SpotBugs. Выполнить команду: mvn spotbugs:check. Проанализировать найденные проблемы и исправить их. ",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "body",
+        "runs": [
+          {
+            "id": "r_55_0",
+            "text": "Для выполнения необходимо добавить ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_55_1",
+            "text": "в секцию ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_55_2",
+            "text": "build",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_55_3",
+            "text": " плагин ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_55_4",
+            "text": "SpotBugs",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_55_5",
+            "text": ". Выполнит",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_55_6",
+            "text": "ь",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_55_7",
+            "text": " команду: ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_55_8",
+            "text": "mvn",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": true
+          },
+          {
+            "id": "r_55_9",
+            "text": " ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": true
+          },
+          {
+            "id": "r_55_10",
+            "text": "spotbugs:check",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": true
+          },
+          {
+            "id": "r_55_11",
+            "text": ". Проанализи",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_55_12",
+            "text": "ровать",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_55_13",
+            "text": " найденные проблемы и исправ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_55_14",
+            "text": "и",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_55_15",
+            "text": "т",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_55_16",
+            "text": "ь",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          },
+          {
+            "id": "r_55_17",
+            "text": " их. ",
+            "font_name": "Times New Roman",
+            "font_size_pt": 14.0,
+            "bold": null,
+            "italic": null
+          }
+        ]
+      },
+      {
+        "id": "p_56",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "empty",
+        "runs": []
+      },
+      {
+        "id": "p_57",
+        "text": "",
+        "style_name": "Normal",
+        "alignment": null,
+        "first_line_indent_cm": null,
+        "line_spacing": null,
+        "space_before_pt": null,
+        "space_after_pt": null,
+        "block_type": "empty",
+        "runs": []
+      }
+    ],
+    "sections": [
+      {
+        "id": "s_0",
+        "left_margin_cm": 3.0,
+        "right_margin_cm": 1.5,
+        "top_margin_cm": 2.0,
+        "bottom_margin_cm": 2.0
+      }
+    ]
+  }
+}
