@@ -1,19 +1,26 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.tasks import router as tasks_router
-from app.core.config import settings, ensure_dirs
-from app.core.db import Base, engine, ensure_schema_compatibility
+from app.api.projects import router as projects_router
+from app.core.config import settings, ensure_dirs, get_cors_origins
 
 
 def create_app() -> FastAPI:
     ensure_dirs()
-    Base.metadata.create_all(bind=engine)
-    ensure_schema_compatibility()
 
     app = FastAPI(title=settings.app_name, debug=settings.debug)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=get_cors_origins(),
+        allow_credentials=True,
+        allow_methods=['*'],
+        allow_headers=['*'],
+    )
     app.include_router(tasks_router)
+    app.include_router(projects_router)
 
     @app.exception_handler(HTTPException)
     async def http_exception_handler(_: Request, exc: HTTPException):

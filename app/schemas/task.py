@@ -23,6 +23,7 @@ class TaskCreateResponse(BaseModel):
 class TaskStatusResponse(BaseModel):
     task_id: str
     user_id: str | None = None
+    project_id: str | None = None
     status: str
     errors: list[str] = []
     warnings: list[str] = []
@@ -33,6 +34,7 @@ class TaskStatusResponse(BaseModel):
 class TaskHistoryItem(BaseModel):
     task_id: str
     user_id: str | None = None
+    project_id: str | None = None
     status: str
     original_filename: str
     created_at: datetime

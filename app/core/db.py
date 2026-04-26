@@ -1,9 +1,10 @@
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
-DATABASE_URL = 'sqlite:///./lab_formatter.db'
+from app.core.config import settings
 
-engine = create_engine(DATABASE_URL, connect_args={'check_same_thread': False})
+
+engine = create_engine(settings.database_url)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 
@@ -17,12 +18,3 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-def ensure_schema_compatibility() -> None:
-    """Apply minimal non-destructive SQLite schema updates for local MVP."""
-    with engine.begin() as conn:
-        result = conn.execute(text("PRAGMA table_info(document_tasks)"))
-        columns = {row[1] for row in result}
-        if "user_id" not in columns:
-            conn.execute(text("ALTER TABLE document_tasks ADD COLUMN user_id TEXT"))

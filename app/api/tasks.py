@@ -8,6 +8,7 @@ from sqlalchemy import select
 from app.core.db import get_db
 from app.core.config import settings
 from app.models.task import DocumentTask, TaskStatus
+from app.models.project import Project, ProjectStatus
 from app.schemas.task import (
     TaskCreateResponse,
     TaskStatusResponse,
@@ -25,10 +26,25 @@ from app.services.title_page_generator import generate_title_page
 router = APIRouter(prefix='/tasks', tags=['tasks'])
 
 
+def _get_project_or_404(db: Session, project_id: str) -> Project:
+    project = db.get(Project, project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail='Проект не найден.')
+    return project
+
+
+def _update_project_status(db: Session, project: Project | None, status: ProjectStatus) -> None:
+    if project is None:
+        return
+    project.status = status
+    db.commit()
+
+
 @router.post('', response_model=TaskCreateResponse)
 def create_task(
     file: UploadFile = File(...),
     user_id: str | None = Form(default=None),
+    project_id: str | None = Form(default=None),
     faculty: str = Form(...),
     department: str = Form(...),
     student_group: str = Form(...),
@@ -41,6 +57,14 @@ def create_task(
 ):
     if not file.filename or not file.filename.lower().endswith('.docx'):
         raise HTTPException(status_code=400, detail='Поддерживается только формат DOCX.')
+
+    project: Project | None = None
+    if project_id:
+        project = _get_project_or_404(db, project_id)
+        if not user_id:
+            raise HTTPException(status_code=400, detail='Для привязки задачи к проекту требуется user_id.')
+        if project.user_id and project.user_id != user_id:
+            raise HTTPException(status_code=403, detail='Проект принадлежит другому пользователю.')
 
     payload = {
         'faculty': faculty,
@@ -55,6 +79,7 @@ def create_task(
 
     task = DocumentTask(
         user_id=user_id,
+        project_id=project_id,
         original_filename=file.filename,
         input_path='',
         payload=payload,
@@ -67,10 +92,12 @@ def create_task(
     db.refresh(task)
 
     input_path = save_input_file(task.id, file)
+    _update_project_status(db, project, ProjectStatus.PROCESSING)
     if Path(input_path).stat().st_size == 0:
         task.status = TaskStatus.FAILED
         task.errors = ['Входной файл пустой.']
         db.commit()
+        _update_project_status(db, project, ProjectStatus.ERROR)
         raise HTTPException(status_code=400, detail='Входной файл пустой.')
 
     output_path = get_output_path(task.id)
@@ -84,6 +111,7 @@ def create_task(
         task.status = TaskStatus.FAILED
         task.errors = ['Не удалось прочитать DOCX. Проверьте, что файл не поврежден.']
         db.commit()
+        _update_project_status(db, project, ProjectStatus.ERROR)
         raise HTTPException(status_code=400, detail='Не удалось прочитать DOCX. Проверьте, что файл не поврежден.')
     if not validation['is_valid']:
         report = {
@@ -99,6 +127,7 @@ def create_task(
         task.errors = validation['errors']
         task.warnings = validation['warnings']
         db.commit()
+        _update_project_status(db, project, ProjectStatus.ERROR)
         return TaskCreateResponse(task_id=task.id, status=task.status.value, report=report)
 
     try:
@@ -107,6 +136,7 @@ def create_task(
         task.status = TaskStatus.FAILED
         task.errors = ['Ошибка обработки документа. Проверьте входной файл.']
         db.commit()
+        _update_project_status(db, project, ProjectStatus.ERROR)
         raise HTTPException(status_code=400, detail='Ошибка обработки документа. Проверьте входной файл.')
     report['metrics'] = validation['metrics']
     report['warnings'].extend(validation['warnings'])
@@ -118,6 +148,7 @@ def create_task(
     task.errors = report['errors']
     task.warnings = report['warnings']
     db.commit()
+    _update_project_status(db, project, ProjectStatus.READY)
 
     return TaskCreateResponse(task_id=task.id, status=task.status.value, report=report)
 
@@ -137,6 +168,7 @@ def list_tasks(
         TaskHistoryItem(
             task_id=task.id,
             user_id=task.user_id,
+            project_id=task.project_id,
             status=task.status.value,
             original_filename=task.original_filename,
             created_at=task.created_at,
@@ -157,6 +189,7 @@ def get_task(task_id: str, db: Session = Depends(get_db)):
     return TaskStatusResponse(
         task_id=task.id,
         user_id=task.user_id,
+        project_id=task.project_id,
         status=task.status.value,
         errors=task.errors or [],
         warnings=task.warnings or [],

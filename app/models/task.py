@@ -19,7 +19,12 @@ class DocumentTask(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
-    status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus), default=TaskStatus.CREATED, nullable=False)
+    project_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    status: Mapped[TaskStatus] = mapped_column(
+        Enum(TaskStatus, values_callable=lambda e: [item.value for item in e], name='task_status'),
+        default=TaskStatus.CREATED,
+        nullable=False,
+    )
     original_filename: Mapped[str] = mapped_column(String, nullable=False)
     input_path: Mapped[str] = mapped_column(String, nullable=False)
     output_path: Mapped[str | None] = mapped_column(String, nullable=True)

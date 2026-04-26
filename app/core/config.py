@@ -7,11 +7,14 @@ class Settings(BaseSettings):
 
     app_name: str = 'Lab Formatter MVP'
     debug: bool = True
+    cors_origins: str = 'http://localhost:3000,http://127.0.0.1:3000'
+    database_url: str = 'postgresql+psycopg://postgres:postgres@localhost:5432/lab_formatter'
 
     storage_dir: str = 'storage'
     input_dir: str = 'storage/inputs'
     output_dir: str = 'storage/outputs'
     report_dir: str = 'storage/reports'
+    projects_dir: str = 'storage/projects'
 
     university_name: str = """МИНИСТЕРСТВО ЦИФРОВОГО РАЗВИТИЯ, СВЯЗИ И МАССОВЫХ КОММУНИКАЦИЙ РОССИЙСКОЙ ФЕДЕРАЦИИ
 Ордена трудового Красного Знамени федеральное государственное бюджетное
@@ -35,6 +38,10 @@ class Settings(BaseSettings):
 settings = Settings()
 
 
+def get_cors_origins() -> list[str]:
+    return [origin.strip() for origin in settings.cors_origins.split(',') if origin.strip()]
+
+
 def ensure_dirs() -> None:
-    for path in [settings.storage_dir, settings.input_dir, settings.output_dir, settings.report_dir]:
+    for path in [settings.storage_dir, settings.input_dir, settings.output_dir, settings.report_dir, settings.projects_dir]:
         Path(path).mkdir(parents=True, exist_ok=True)

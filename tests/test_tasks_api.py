@@ -26,6 +26,7 @@ def client(tmp_path):
     settings.input_dir = str(tmp_path / "storage" / "inputs")
     settings.output_dir = str(tmp_path / "storage" / "outputs")
     settings.report_dir = str(tmp_path / "storage" / "reports")
+    settings.projects_dir = str(tmp_path / "storage" / "projects")
 
     engine = create_engine(
         "sqlite://",
@@ -300,3 +301,64 @@ def test_download_and_report_forbidden_for_other_user(client: TestClient):
 
     report_resp = client.get(f"/tasks/{task_id}/report?user_id=another-user")
     assert report_resp.status_code == 403
+
+
+def test_task_can_be_linked_to_project_and_update_project_status(client: TestClient):
+    upload_files = {
+        "file": (
+            "source.docx",
+            _valid_docx_bytes(),
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+    }
+    upload_resp = client.post("/projects/upload", data={"user_id": "demo-user-1"}, files=upload_files)
+    assert upload_resp.status_code == 200
+    project_id = upload_resp.json()["project_id"]
+
+    task_files = {
+        "file": (
+            "valid.docx",
+            _valid_docx_bytes(),
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+    }
+    task_data = _form_data()
+    task_data["project_id"] = project_id
+    task_resp = client.post("/tasks", data=task_data, files=task_files)
+    assert task_resp.status_code == 200
+
+    task_id = task_resp.json()["task_id"]
+    task_status_resp = client.get(f"/tasks/{task_id}")
+    assert task_status_resp.status_code == 200
+    assert task_status_resp.json()["project_id"] == project_id
+
+    project_status_resp = client.get(f"/projects/{project_id}")
+    assert project_status_resp.status_code == 200
+    assert project_status_resp.json()["status"] == "ready"
+
+
+def test_link_project_requires_user_id(client: TestClient):
+    upload_files = {
+        "file": (
+            "source.docx",
+            _valid_docx_bytes(),
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+    }
+    upload_resp = client.post("/projects/upload", data={"user_id": "demo-user-1"}, files=upload_files)
+    assert upload_resp.status_code == 200
+    project_id = upload_resp.json()["project_id"]
+
+    task_files = {
+        "file": (
+            "valid.docx",
+            _valid_docx_bytes(),
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+    }
+    task_data = _form_data()
+    task_data.pop("user_id")
+    task_data["project_id"] = project_id
+    task_resp = client.post("/tasks", data=task_data, files=task_files)
+    assert task_resp.status_code == 400
+    assert "требуется user_id" in _error_message(task_resp).lower()

@@ -29,8 +29,16 @@
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+alembic upgrade head
 uvicorn app.main:app --reload
 ```
+
+Перед запуском убедитесь, что PostgreSQL доступен и в `.env` задан корректный `database_url`.
+
+### Миграции БД (Alembic)
+
+- применить миграции: `alembic upgrade head`
+- создать новую миграцию: `alembic revision -m "описание_изменения"`
 
 ## API
 
@@ -39,6 +47,7 @@ uvicorn app.main:app --reload
 multipart/form-data:
 - `file`: исходный DOCX
 - `user_id` (опционально)
+- `project_id` (опционально, связывает задачу с проектом)
 - `faculty`
 - `department`
 - `student_group`
@@ -84,6 +93,36 @@ multipart/form-data:
 
 Ответ: DOCX файл с титульным листом (заменяет существующий, если есть).
 
+### `POST /projects/upload` (загрузка исходника проекта)
+
+multipart/form-data:
+- `file`: исходный файл (`.docx`, `.pdf`, `.png`, `.jpg`)
+- `user_id` (опционально)
+
+Ответ:
+- `project_id`
+- `status` (`uploaded`)
+- `source_filename`
+
+Файлы проекта сохраняются в структуре:
+
+```text
+storage/projects/{project_id}/
+  input/
+  images/
+  output/
+  metadata.json
+```
+
+### `GET /projects/{project_id}` (статус проекта)
+
+Возвращает:
+- `project_id`
+- `user_id`
+- `status` (`created` / `uploaded` / `processing` / `ready` / `error`)
+- `source_filename`
+- `created_at`, `updated_at`
+
 ### Общие ошибки
 - `400 Поддерживается только формат DOCX.`
 - `400 Входной файл пустой.`
@@ -98,6 +137,7 @@ multipart/form-data:
 
 Возвращает статус задачи:
 - `task_id`
+- `project_id`
 - `status` (`created` / `completed` / `failed`)
 - `errors`, `warnings`
 - `has_output`, `has_report`
@@ -114,6 +154,7 @@ Query params:
 - `items`: список задач (сначала новые), где у каждой:
   - `task_id`
   - `user_id`
+  - `project_id`
   - `status`
   - `original_filename`
   - `created_at`
