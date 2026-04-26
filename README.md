@@ -104,6 +104,16 @@ multipart/form-data:
 - `status` (`uploaded`)
 - `source_filename`
 
+### `POST /projects/{project_id}/files` (дозагрузка файлов в проект)
+
+multipart/form-data:
+- `file`: файл (`.docx`, `.pdf`, `.png`, `.jpg`)
+- `user_id` (обязателен; можно загружать только в свой проект)
+
+Правило хранения:
+- `.docx`, `.pdf` -> `storage/projects/{project_id}/input/`
+- `.png`, `.jpg` -> `storage/projects/{project_id}/images/`
+
 Файлы проекта сохраняются в структуре:
 
 ```text
@@ -114,14 +124,58 @@ storage/projects/{project_id}/
   metadata.json
 ```
 
+`metadata.json` хранится отдельно от БД и содержит:
+- `db_snapshot`: служебный снимок ключевых полей проекта (`project_id`, `status`, `source_path`, `timestamps`, `user_id`);
+- `metadata`: данные для работы с проектом (`source_filename`, список файлов, `analysis`, `ml_suggestions`, `processing_errors`).
+
 ### `GET /projects/{project_id}` (статус проекта)
 
 Возвращает:
 - `project_id`
 - `user_id`
-- `status` (`created` / `uploaded` / `processing` / `ready` / `error`)
+- `status` (`uploaded` / `processing` / `analyzing` / `ready` / `error`)
 - `source_filename`
 - `created_at`, `updated_at`
+
+### `GET /projects/{project_id}/download` (скачать готовый файл проекта)
+
+Query params:
+- `user_id` (обязателен; можно скачать только свой результат)
+
+Возвращает последний успешно обработанный DOCX-файл для проекта.
+Приоритет источника:
+- сначала `storage/projects/{project_id}/output/*.docx`;
+- если папка пуста, fallback на `output_path` последней успешной связанной задачи.
+
+### `DELETE /projects/{project_id}` (удалить проект целиком)
+
+Query params:
+- `user_id` (обязателен; можно удалить только свой проект)
+
+Удаляет:
+- проект из БД,
+- связанные задачи проекта,
+- папку `storage/projects/{project_id}` со всеми файлами.
+
+### `POST /projects/{project_id}/analyze` (запуск ML-анализа проекта)
+
+Query params:
+- `user_id` (обязателен; можно запускать только для своего проекта)
+
+Ответ:
+- `project_id`
+- `status` (`ready` или `error`)
+- `analysis` (результат анализа)
+
+### `GET /projects/{project_id}/analysis` (получить результат ML-анализа)
+
+Query params:
+- `user_id` (обязателен; доступ только к своему проекту)
+
+Возвращает:
+- `project_id`
+- `status`
+- `analysis`
 
 ### Общие ошибки
 - `400 Поддерживается только формат DOCX.`

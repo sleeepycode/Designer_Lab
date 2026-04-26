@@ -63,3 +63,22 @@ def write_project_metadata(project_id: str, metadata: dict) -> str:
     with metadata_path.open("w", encoding="utf-8") as f:
         json.dump(metadata, f, ensure_ascii=False, indent=2)
     return str(metadata_path)
+
+
+def read_project_metadata(project_id: str) -> dict:
+    dirs = ensure_project_dirs(project_id)
+    metadata_path = dirs["root"] / "metadata.json"
+    if not metadata_path.exists():
+        return {}
+    with metadata_path.open("r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def save_project_output_file(project_id: str, task_id: str, output_source_path: str) -> str:
+    dirs = ensure_project_dirs(project_id)
+    source = Path(output_source_path)
+    if not source.exists():
+        raise FileNotFoundError("Исходный output-файл задачи не найден.")
+    target = dirs["output"] / f"{task_id}.docx"
+    shutil.copy2(source, target)
+    return str(target)

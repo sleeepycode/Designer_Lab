@@ -16,7 +16,14 @@ from app.schemas.task import (
     TaskHistoryResponse,
     TaskDeleteResponse,
 )
-from app.services.storage import save_input_file, get_output_path, get_report_path
+from app.services.storage import (
+    save_input_file,
+    get_output_path,
+    get_report_path,
+    save_project_output_file,
+    read_project_metadata,
+    write_project_metadata,
+)
 from app.services.validator import validate_source_document
 from app.services.gost_applier import process_document
 from app.services.reporting import save_report
@@ -38,6 +45,17 @@ def _update_project_status(db: Session, project: Project | None, status: Project
         return
     project.status = status
     db.commit()
+
+
+def _sync_project_metadata_snapshot(project: Project) -> dict:
+    return {
+        "project_id": project.id,
+        "user_id": project.user_id,
+        "status": project.status.value,
+        "source_path": project.source_path,
+        "created_at": project.created_at.isoformat() if project.created_at else None,
+        "updated_at": project.updated_at.isoformat() if project.updated_at else None,
+    }
 
 
 @router.post('', response_model=TaskCreateResponse)
@@ -130,6 +148,8 @@ def create_task(
         _update_project_status(db, project, ProjectStatus.ERROR)
         return TaskCreateResponse(task_id=task.id, status=task.status.value, report=report)
 
+    _update_project_status(db, project, ProjectStatus.ANALYZING)
+
     try:
         report = process_document(input_path, output_path, payload)
     except Exception:
@@ -149,6 +169,20 @@ def create_task(
     task.warnings = report['warnings']
     db.commit()
     _update_project_status(db, project, ProjectStatus.READY)
+    if project:
+        try:
+            project_output_path = save_project_output_file(project.id, task.id, output_path)
+            metadata = read_project_metadata(project.id)
+            metadata_block = metadata.get("metadata", {})
+            files = metadata_block.get("files", [])
+            files.append({"path": project_output_path, "type": "output", "name": f"{task.id}.docx"})
+            metadata_block["files"] = files
+            metadata["metadata"] = metadata_block
+            metadata["db_snapshot"] = _sync_project_metadata_snapshot(project)
+            write_project_metadata(project.id, metadata)
+        except Exception:
+            # Не блокируем успешную обработку задачи из-за ошибки синхронизации project/output.
+            pass
 
     return TaskCreateResponse(task_id=task.id, status=task.status.value, report=report)
 

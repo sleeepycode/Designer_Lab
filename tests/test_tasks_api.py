@@ -336,6 +336,9 @@ def test_task_can_be_linked_to_project_and_update_project_status(client: TestCli
     assert project_status_resp.status_code == 200
     assert project_status_resp.json()["status"] == "ready"
 
+    project_output_file = Path(settings.projects_dir) / project_id / "output" / f"{task_id}.docx"
+    assert project_output_file.exists()
+
 
 def test_link_project_requires_user_id(client: TestClient):
     upload_files = {

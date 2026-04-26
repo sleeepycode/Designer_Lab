@@ -9,9 +9,9 @@ from app.core.db import Base
 
 
 class ProjectStatus(str, enum.Enum):
-    CREATED = "created"
     UPLOADED = "uploaded"
     PROCESSING = "processing"
+    ANALYZING = "analyzing"
     READY = "ready"
     ERROR = "error"
 
@@ -23,7 +23,7 @@ class Project(Base):
     user_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     status: Mapped[ProjectStatus] = mapped_column(
         Enum(ProjectStatus, values_callable=lambda e: [item.value for item in e], name="project_status"),
-        default=ProjectStatus.CREATED,
+        default=ProjectStatus.UPLOADED,
         nullable=False,
     )
     source_filename: Mapped[str] = mapped_column(String, nullable=False)
