@@ -9,3 +9,5 @@ python-multipart
 python-docx
 pytest
 httpx
+pillow
+pytesseract

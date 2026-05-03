@@ -34,3 +34,26 @@ class ProjectFileUploadResponse(BaseModel):
     status: str
     file_path: str
     file_type: str
+
+
+class ProjectProcessResponse(BaseModel):
+    project_id: str
+    task_id: str
+    status: str
+    report: dict
+
+
+class ProjectSuggestionsResponse(BaseModel):
+    project_id: str
+    status: str
+    suggestions: list[dict]
+
+
+class ApplySuggestionsBody(BaseModel):
+    suggestion_ids: list[str]
+
+
+class ApplySuggestionsResponse(BaseModel):
+    project_id: str
+    status: str
+    applied_ids: list[str]

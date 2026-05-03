@@ -300,3 +300,89 @@ def test_upload_additional_files_to_existing_project_separates_input_and_images(
         file_names = {item["name"] for item in metadata["metadata"]["files"]}
         assert "extra.docx" in file_names
         assert "scan.jpg" in file_names
+
+
+def test_post_process_project_runs_same_pipeline_as_tasks(tmp_path):
+    with _client(tmp_path) as client:
+        upload_files = {
+            "file": (
+                "source.docx",
+                _valid_processing_docx_bytes(),
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+        }
+        upload_resp = client.post("/projects/upload", data={"user_id": "user-1"}, files=upload_files)
+        assert upload_resp.status_code == 200
+        project_id = upload_resp.json()["project_id"]
+
+        form = {
+            "user_id": "user-1",
+            "faculty": "ФКТ",
+            "department": "Кафедра ИС",
+            "student_group": "БПИ-01",
+            "lab_title": "Тестирование API",
+            "lab_number": "1",
+            "student_name": "Иванов И.И.",
+            "reviewer_name": "Петров П.П.",
+            "discipline": "Программирование",
+        }
+        proc_resp = client.post(f"/projects/{project_id}/process", data=form)
+        assert proc_resp.status_code == 200
+        body = proc_resp.json()
+        assert body["status"] == "ready"
+        task_id = body["task_id"]
+
+        out_file = Path(settings.projects_dir) / project_id / "output" / f"{task_id}.docx"
+        assert out_file.exists()
+
+
+def test_suggestions_get_and_apply(tmp_path):
+    with _client(tmp_path) as client:
+        upload_files = {
+            "file": (
+                "source.docx",
+                _valid_processing_docx_bytes(),
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+        }
+        upload_resp = client.post("/projects/upload", data={"user_id": "user-1"}, files=upload_files)
+        assert upload_resp.status_code == 200
+        project_id = upload_resp.json()["project_id"]
+
+        client.post(
+            f"/projects/{project_id}/files",
+            data={"user_id": "user-1"},
+            files={"file": ("fig1.png", b"\x89PNG\r\n", "image/png")},
+        )
+
+        form = {
+            "user_id": "user-1",
+            "faculty": "ФКТ",
+            "department": "Кафедра ИС",
+            "student_group": "БПИ-01",
+            "lab_title": "Тестирование API",
+            "lab_number": "1",
+            "student_name": "Иванов И.И.",
+            "reviewer_name": "Петров П.П.",
+            "discipline": "Программирование",
+        }
+        assert client.post(f"/projects/{project_id}/process", data=form).status_code == 200
+
+        sug_resp = client.get(f"/projects/{project_id}/suggestions?user_id=user-1")
+        assert sug_resp.status_code == 200
+        items = sug_resp.json()["suggestions"]
+        assert len(items) >= 1
+        sid = items[0]["id"]
+
+        apply_resp = client.post(
+            f"/projects/{project_id}/suggestions/apply?user_id=user-1",
+            json={"suggestion_ids": [sid]},
+        )
+        assert apply_resp.status_code == 200
+        assert sid in apply_resp.json()["applied_ids"]
+
+        meta = json.loads(
+            (Path(settings.projects_dir) / project_id / "metadata.json").read_text(encoding="utf-8")
+        )
+        applied = [s for s in meta["metadata"]["image_suggestions"] if s.get("id") == sid]
+        assert applied and applied[0].get("applied") is True

@@ -74,6 +74,17 @@ def read_project_metadata(project_id: str) -> dict:
         return json.load(f)
 
 
+def copy_project_file_to_task_input(task_id: str, source_path: str | Path) -> str:
+    ensure_dirs()
+    src = Path(source_path)
+    if not src.is_file():
+        raise FileNotFoundError("Исходный файл не найден.")
+    ext = src.suffix.lower() or ".docx"
+    dest = Path(settings.input_dir) / f"{task_id}{ext}"
+    shutil.copy2(src, dest)
+    return str(dest)
+
+
 def save_project_output_file(project_id: str, task_id: str, output_source_path: str) -> str:
     dirs = ensure_project_dirs(project_id)
     source = Path(output_source_path)

@@ -16,17 +16,8 @@ from app.schemas.task import (
     TaskHistoryResponse,
     TaskDeleteResponse,
 )
-from app.services.storage import (
-    save_input_file,
-    get_output_path,
-    get_report_path,
-    save_project_output_file,
-    read_project_metadata,
-    write_project_metadata,
-)
-from app.services.validator import validate_source_document
-from app.services.gost_applier import process_document
-from app.services.reporting import save_report
+from app.services.storage import save_input_file, get_output_path, get_report_path
+from app.services.task_pipeline import run_document_task_pipeline
 from app.services.docx_extractor import extract_docx_content
 from app.services.title_page_generator import generate_title_page
 
@@ -45,17 +36,6 @@ def _update_project_status(db: Session, project: Project | None, status: Project
         return
     project.status = status
     db.commit()
-
-
-def _sync_project_metadata_snapshot(project: Project) -> dict:
-    return {
-        "project_id": project.id,
-        "user_id": project.user_id,
-        "status": project.status.value,
-        "source_path": project.source_path,
-        "created_at": project.created_at.isoformat() if project.created_at else None,
-        "updated_at": project.updated_at.isoformat() if project.updated_at else None,
-    }
 
 
 @router.post('', response_model=TaskCreateResponse)
@@ -111,80 +91,11 @@ def create_task(
 
     input_path = save_input_file(task.id, file)
     _update_project_status(db, project, ProjectStatus.PROCESSING)
-    if Path(input_path).stat().st_size == 0:
-        task.status = TaskStatus.FAILED
-        task.errors = ['Входной файл пустой.']
-        db.commit()
-        _update_project_status(db, project, ProjectStatus.ERROR)
-        raise HTTPException(status_code=400, detail='Входной файл пустой.')
 
-    output_path = get_output_path(task.id)
-    report_path = get_report_path(task.id)
-
-    task.input_path = input_path
-
-    try:
-        validation = validate_source_document(input_path)
-    except Exception:
-        task.status = TaskStatus.FAILED
-        task.errors = ['Не удалось прочитать DOCX. Проверьте, что файл не поврежден.']
-        db.commit()
-        _update_project_status(db, project, ProjectStatus.ERROR)
-        raise HTTPException(status_code=400, detail='Не удалось прочитать DOCX. Проверьте, что файл не поврежден.')
-    if not validation['is_valid']:
-        report = {
-            'status': 'failed',
-            'errors': validation['errors'],
-            'warnings': validation['warnings'],
-            'metrics': validation['metrics'],
-            'fixes': [],
-        }
-        save_report(report_path, report)
-        task.status = TaskStatus.FAILED
-        task.report_path = report_path
-        task.errors = validation['errors']
-        task.warnings = validation['warnings']
-        db.commit()
-        _update_project_status(db, project, ProjectStatus.ERROR)
-        return TaskCreateResponse(task_id=task.id, status=task.status.value, report=report)
-
-    _update_project_status(db, project, ProjectStatus.ANALYZING)
-
-    try:
-        report = process_document(input_path, output_path, payload)
-    except Exception:
-        task.status = TaskStatus.FAILED
-        task.errors = ['Ошибка обработки документа. Проверьте входной файл.']
-        db.commit()
-        _update_project_status(db, project, ProjectStatus.ERROR)
-        raise HTTPException(status_code=400, detail='Ошибка обработки документа. Проверьте входной файл.')
-    report['metrics'] = validation['metrics']
-    report['warnings'].extend(validation['warnings'])
-    save_report(report_path, report)
-
-    task.status = TaskStatus.COMPLETED
-    task.output_path = output_path
-    task.report_path = report_path
-    task.errors = report['errors']
-    task.warnings = report['warnings']
-    db.commit()
-    _update_project_status(db, project, ProjectStatus.READY)
-    if project:
-        try:
-            project_output_path = save_project_output_file(project.id, task.id, output_path)
-            metadata = read_project_metadata(project.id)
-            metadata_block = metadata.get("metadata", {})
-            files = metadata_block.get("files", [])
-            files.append({"path": project_output_path, "type": "output", "name": f"{task.id}.docx"})
-            metadata_block["files"] = files
-            metadata["metadata"] = metadata_block
-            metadata["db_snapshot"] = _sync_project_metadata_snapshot(project)
-            write_project_metadata(project.id, metadata)
-        except Exception:
-            # Не блокируем успешную обработку задачи из-за ошибки синхронизации project/output.
-            pass
-
-    return TaskCreateResponse(task_id=task.id, status=task.status.value, report=report)
+    result = run_document_task_pipeline(db, task, project, input_path)
+    if result["type"] == "validation_failed":
+        return TaskCreateResponse(task_id=task.id, status=task.status.value, report=result["report"])
+    return TaskCreateResponse(task_id=task.id, status=task.status.value, report=result["report"])
 
 
 @router.get('', response_model=TaskHistoryResponse)

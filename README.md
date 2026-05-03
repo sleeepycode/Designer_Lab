@@ -126,7 +126,68 @@ storage/projects/{project_id}/
 
 `metadata.json` хранится отдельно от БД и содержит:
 - `db_snapshot`: служебный снимок ключевых полей проекта (`project_id`, `status`, `source_path`, `timestamps`, `user_id`);
-- `metadata`: данные для работы с проектом (`source_filename`, список файлов, `analysis`, `ml_suggestions`, `processing_errors`).
+- `metadata`: данные для работы с проектом (`source_filename`, список файлов, `analysis`, `ml_suggestions`, `image_suggestions`, `gost_module_analysis`, `processing_errors`).
+
+**Статусы проекта (жизненный цикл):**
+
+- `uploaded` — файлы проекта загружены.
+- `processing` — идёт основная обработка DOCX (валидация + форматирование в нашем пайплайне).
+- `analyzing` — идёт вызов **ML-сервиса** `gost_module` (`POST /analyze` на готовом docx в `output/`), если в `.env` задан `gost_module_base_url`.
+- `ready` — обработка и (при настроенном URL) анализ ML успешно завершены.
+- `error` — ошибка на любом шаге, в т.ч. **недоступен или упал gost_module** при заданном URL (детали в `metadata.processing_errors`).
+
+Если `gost_module_base_url` **не задан**, после `processing` проект сразу переходит в `ready` (этап `analyzing` пропускается).
+
+### Форматы файлов: что «хранится» и что «обрабатывается»
+
+- **Хранение** в проекте: можно загрузить `.docx`, `.pdf`, `.png`, `.jpg` — лежат в `input/` и `images/`.
+- **Оформление лабы (ГОСТ) как в коде сейчас** — только **DOCX**: `POST /tasks` и `POST /projects/{id}/process` читают **один основной `.docx`** (исходник проекта или последний `input/*.docx`). PDF в этом пайплайне **не конвертируется** в docx автоматически.
+- **Картинки** в `images/` — для цепочки подсказок (таск 4): API `.../suggestions` сейчас отдаёт **mock**-поля; реальный ML по картинкам подключается отдельно (тот же формат ответа).
+- **Модуль `gost_module` из ветки ML** — это **анализ и замечания по DOCX** (`POST /analyze` в отдельном сервисе), не распознавание PNG.
+
+### Интеграция с `gost_module` (ветка ML)
+
+1. Подними второй сервис (из папки `Designer_Lab_ML/gost_module` или клона репозитория), например порт **9001**:  
+   `uvicorn app.main:app --reload --port 9001`
+2. В `.env` **основного** бэка укажи:  
+   `gost_module_base_url=http://127.0.0.1:9001`
+3. После успешного **`POST /projects/{id}/process`** основной бэк отправляет готовый DOCX из `output/` на `POST /analyze` и сохраняет JSON в **`metadata.metadata.gost_module_analysis`**. То же дополнение (`gost_module` в теле) добавляется при **`POST /projects/{id}/analyze`**, если доступен DOCX проекта.
+
+### `POST /projects/{project_id}/process` (одна кнопка «Обработать»)
+
+Запускает тот же пайплайн, что и `POST /tasks`, но **без повторной загрузки файла**: берётся DOCX из проекта (исходник или последний `input/*.docx`).
+
+multipart/form-data (как у `POST /tasks`):
+
+- `user_id` (обязателен)
+- `faculty`, `department`, `student_group`, `lab_title`, `lab_number`, `student_name`, `reviewer_name`, `discipline`
+
+Ответ: `project_id`, `task_id`, `status` (статус **проекта**: `ready` / `error` / и т.д.), `report`.
+
+Итоговый DOCX копируется в `storage/projects/{project_id}/output/{task_id}.docx`, путь к json-отчёту задачи — в `metadata.metadata.last_task_report_path`. Ошибки также пишутся в `metadata.metadata.processing_errors`.
+
+### `GET /projects/{project_id}/suggestions` (подсказки по изображениям, таск 4)
+
+Query: `user_id` (обязателен).
+
+Для каждого файла в `images/` (`.png`, `.jpg`, `.jpeg`) формируется запись с полями ТЗ: **`image_type`**, **`ocr_text`**, **`keywords`**, **`suggested_insertion`**, **`caption`**, плюс **`ocr_status`** / **`ocr_error`** (если OCR недоступен).
+
+- **Тип рисунка** — эвристика по имени файла и пропорциям изображения (Pillow).
+- **OCR** — **Tesseract** (`pytesseract` + установленный в ОС [Tesseract OCR](https://github.com/tesseract-ocr/tesseract); языки `rus+eng`). Если движок не установлен, `ocr_text` пустой, в **`ocr_error`** — причина (не выдуманный текст).
+- **Ключевые слова** — из имени файла и из распознанного текста.
+- Стабильный **`id`** у подсказки — от хэша `project_id` + пути к файлу (одна и та же картинка = тот же id).
+
+Анализ **DOCX по ГОСТ** — это сервис **`gost_module`**, результат в `metadata.gost_module_analysis` (см. выше), это другой контур, не список по картинкам.
+
+### `POST /projects/{project_id}/suggestions/apply`
+
+Query: `user_id` (обязателен).
+
+JSON body:
+
+- `suggestion_ids`: список id подсказок, которые пользователь принял
+
+Помечает выбранные подсказки как `applied: true` в `metadata.json`.
 
 ### `GET /projects/{project_id}` (статус проекта)
 

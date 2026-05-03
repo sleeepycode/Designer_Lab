@@ -13,3 +13,6 @@ storage/
 *.sqlite3
 
 .pytest_cache/
+
+# Локальная копия ML-ветки рядом с бэком — не коммитить
+Designer_Lab_ML/

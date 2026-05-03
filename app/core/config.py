@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     report_dir: str = 'storage/reports'
     projects_dir: str = 'storage/projects'
 
+    # Отдельный процесс gost_module (Designer_Lab ML/gost_module): POST /analyze
+    gost_module_base_url: str = ''
+
     university_name: str = """МИНИСТЕРСТВО ЦИФРОВОГО РАЗВИТИЯ, СВЯЗИ И МАССОВЫХ КОММУНИКАЦИЙ РОССИЙСКОЙ ФЕДЕРАЦИИ
 Ордена трудового Красного Знамени федеральное государственное бюджетное
 образовательное учреждение высшего образования
