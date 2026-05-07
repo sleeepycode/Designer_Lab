@@ -5,3 +5,11 @@ pydantic
 pydantic-settings
 python-multipart
 python-docx
+<<<<<<< HEAD
+=======
+pytest
+httpx
+celery
+kombu
+requests
+>>>>>>> 497a3e5 (Обработка файла, применение титульного листа, по данным из формы в JSON формате. Валидация входного документа, сохранение ошибок и предупреждений в БД, если таковые имеются.)

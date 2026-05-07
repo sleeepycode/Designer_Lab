@@ -38,23 +38,44 @@ def add_text_paragraph(doc: Document, text: str) -> None:
     format_paragraph_common(p)
 
 
+<<<<<<< HEAD
 def add_centered_paragraph(doc: Document, text: str, bold: bool = False) -> None:
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p.paragraph_format.line_spacing = 1.15
+=======
+def add_centered_paragraph(doc: Document, text: str, bold: bool = False, line_spacing: float = 1.0, space_before: float = 0, space_after: float = 0) -> None:
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.first_line_indent = Cm(0)
+    p.paragraph_format.line_spacing = line_spacing
+    p.paragraph_format.space_before = Pt(space_before)
+    p.paragraph_format.space_after = Pt(space_after)
+>>>>>>> 497a3e5 (Обработка файла, применение титульного листа, по данным из формы в JSON формате. Валидация входного документа, сохранение ошибок и предупреждений в БД, если таковые имеются.)
     run = p.add_run(text)
     run.bold = bold
     set_run_font(run)
 
 
+<<<<<<< HEAD
 def add_right_paragraph(doc: Document, text: str) -> None:
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
     p.paragraph_format.line_spacing = 1.5
+=======
+def add_right_paragraph(doc: Document, text: str, line_spacing: float = 1.0, space_before: float = 0) -> None:
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    p.paragraph_format.first_line_indent = Cm(0)
+    p.paragraph_format.line_spacing = line_spacing
+    p.paragraph_format.space_before = Pt(space_before)
+    p.paragraph_format.space_after = Pt(0)
+>>>>>>> 497a3e5 (Обработка файла, применение титульного листа, по данным из формы в JSON формате. Валидация входного документа, сохранение ошибок и предупреждений в БД, если таковые имеются.)
     run = p.add_run(text)
     set_run_font(run)
 
 
+<<<<<<< HEAD
 def build_title_page(doc: Document, payload: dict) -> None:
     add_centered_paragraph(doc, settings.university_name, bold=True)
     add_centered_paragraph(doc, payload["faculty"])
@@ -86,6 +107,43 @@ def build_title_page(doc: Document, payload: dict) -> None:
     add_centered_paragraph(doc, f"{settings.city}, {settings.year}")
 
     doc.add_page_break()
+=======
+def add_empty_line(doc: Document, line_spacing: float = 1.0) -> None:
+    p = doc.add_paragraph()
+    p.paragraph_format.line_spacing = line_spacing
+    p.paragraph_format.space_before = Pt(0)
+    p.paragraph_format.space_after = Pt(0)
+
+
+def build_title_page(doc: Document, payload: dict) -> None:
+    add_centered_paragraph(doc, settings.university_name, bold=True, line_spacing=1.0)
+    add_centered_paragraph(doc, f"Факультет «{payload['faculty']}»", line_spacing=1.0)
+    add_centered_paragraph(doc, f"Кафедра «{payload['department']}»", line_spacing=1.0)
+
+    add_empty_line(doc)
+    add_empty_line(doc)
+
+    add_centered_paragraph(doc, f"Отчет по лабораторной работе № {payload['lab_number']}", bold=True, line_spacing=1.0)
+    add_centered_paragraph(doc, f"по дисциплине «{payload['discipline']}»", line_spacing=1.0)
+    add_centered_paragraph(doc, "на тему:", line_spacing=1.0)
+    add_centered_paragraph(doc, f"«{payload['lab_title']}»", line_spacing=1.0)
+
+    add_empty_line(doc)
+    add_empty_line(doc)
+    add_empty_line(doc)
+
+    add_right_paragraph(doc, f"Выполнил: студент группы {payload['student_group']}", line_spacing=1.0)
+    add_right_paragraph(doc, f"{payload['student_name']}", line_spacing=1.0)
+    add_right_paragraph(doc, f"Проверил:", line_spacing=1.0)
+    add_right_paragraph(doc, f"{payload['reviewer_name']}", line_spacing=1.0)
+
+    add_empty_line(doc)
+    add_empty_line(doc)
+    add_empty_line(doc)
+
+    add_centered_paragraph(doc, f"{settings.city}, {settings.year}", space_before=180)
+    doc.add_section(WD_SECTION.NEW_PAGE)
+>>>>>>> 497a3e5 (Обработка файла, применение титульного листа, по данным из формы в JSON формате. Валидация входного документа, сохранение ошибок и предупреждений в БД, если таковые имеются.)
 
 
 def add_table_block(doc: Document, block: TableBlock) -> None:
