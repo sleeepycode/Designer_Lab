@@ -1,0 +1,44 @@
+{
+  "success": true,
+  "topic": "зависимость температуры от времени",
+  "summary": {
+    "status": "needs_review",
+    "missing_sections_count": 2,
+    "images_count": 1,
+    "suggestions_count": 2
+  },
+  "report": {
+    "found_sections": [
+      "introduction",
+      "practice",
+      "conclusion"
+    ],
+    "missing_sections": [
+      "theory",
+      "references"
+    ],
+    "has_required_structure": false,
+    "generated_sections": [
+      {
+        "section": "theory",
+        "title": "Теоретическая часть",
+        "text": "...",
+        "source": "ollama"
+      }
+    ],
+    "bibliography": [
+      "ГОСТ 7.32-2017...",
+      "ГОСТ Р 7.0.5-2008..."
+    ]
+  },
+  "images": [],
+  "content_suggestions": [],
+  "errors": [],
+  "meta": {
+    "module": "ofor-ml",
+    "version": "9.0-api-ready-local-ai",
+    "approach": "local-llm-first-safe-fallback",
+    "ai_provider": "ollama",
+    "ai_used": true
+  }
+}
