@@ -56,7 +56,6 @@ def remove_existing_title_page(doc: Document) -> None:
 def generate_title_page(
     input_path: str,
     output_path: str,
-    faculty: str,           # <-- добавлено
     department: str,
     discipline: str,
     lab_number: str,
@@ -94,12 +93,10 @@ def generate_title_page(
         ('', WD_ALIGN_PARAGRAPH.CENTER, None, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, None, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, None, False, 0, 0),
-        ('', WD_ALIGN_PARAGRAPH.CENTER, None, False, 0, 0),
         (f"{reviewer_name}", WD_ALIGN_PARAGRAPH.RIGHT, settings.font_size_pt, False, 0, 0),
         (f"Проверил:", WD_ALIGN_PARAGRAPH.RIGHT, settings.font_size_pt, False, 0, 0),
         (f"{student_name}", WD_ALIGN_PARAGRAPH.RIGHT, settings.font_size_pt, False, 0, 0),
         (f"Выполнил: студент группы {student_group}", WD_ALIGN_PARAGRAPH.RIGHT, settings.font_size_pt, False, 0, 0),
-        ('', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
