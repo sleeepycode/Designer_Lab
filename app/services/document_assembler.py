@@ -22,100 +22,130 @@ def apply_ml_changes_to_structure(
     ml_response: Dict[str, Any]
 ) -> Dict[str, Any]:
     """
-    Объединяет исходную структуру с правками ML
+    Применяет правки ML к структуре.
     """
+    import json
+   
+    print("=" * 50)
+    print("ML_RESPONSE RECEIVED:")
+    print(json.dumps(ml_response, ensure_ascii=False, indent=2)[:1000])
+    print("=" * 50)
+    
     result = {
         'paragraphs': original_structure.get('paragraphs', []),
         'tables': original_structure.get('tables', []),
         'images': original_structure.get('images', []),
     }
     
-    # Добавляем ML-секции
-    sections_order = ['introduction', 'theory', 'practice', 'conclusion']
-    section_titles = {
-        'introduction': 'Введение',
-        'theory': 'Теоретическая часть',
-        'practice': 'Практическая часть / Ход работы',
-        'conclusion': 'Заключение'
-    }
+    generated_sections = []
     
-    # Получаем сгенерированные секции из ML
-    generated_sections = ml_response.get('generated_sections', [])
+    if 'generated_sections' in ml_response:
+        generated_sections = ml_response['generated_sections']
+        print(f"✅ Found 'generated_sections' at root: {len(generated_sections)} sections")
+    elif 'report' in ml_response and 'generated_sections' in ml_response['report']:
+        generated_sections = ml_response['report']['generated_sections']
+        print(f"✅ Found 'generated_sections' in 'report': {len(generated_sections)} sections")
+    else:
+        print("❌ No 'generated_sections' found in ml_response")
+        print(f"   Available keys: {list(ml_response.keys())}")
     
     for section in generated_sections:
         section_key = section.get('section')
-        if section_key in sections_order:
+        section_text = section.get('text', '')
+        section_title = section.get('title', '')
+        
+        print(f"   Section: {section_key}")
+        print(f"   Title: {section_title[:50]}...")
+        print(f"   Text length: {len(section_text)} chars")
+        
+        if section_key:
             result[section_key] = {
                 'type': 'section',
-                'title': section.get('title', section_titles.get(section_key, '')),
-                'content': section.get('text', ''),
-                'source': 'ml_generated'
+                'title': section_title,
+                'content': section_text,
+                'source': 'ml'
             }
+            print(f"   ✅ Added to result: {section_key}")
     
-    # Добавляем библиографию
-    bibliography = ml_response.get('bibliography', [])
+    # Проверяем bibliography
+    bibliography = []
+    if 'bibliography' in ml_response:
+        bibliography = ml_response['bibliography']
+        print(f"✅ Found 'bibliography' at root: {len(bibliography)} items")
+    elif 'report' in ml_response and 'bibliography' in ml_response['report']:
+        bibliography = ml_response['report']['bibliography']
+        print(f"✅ Found 'bibliography' in 'report': {len(bibliography)} items")
+    
     if bibliography:
         result['bibliography'] = bibliography
     
-    # Обрабатываем content_suggestions
-    for suggestion in ml_response.get('content_suggestions', []):
-        if suggestion.get('action') == 'generate':
-            target = suggestion.get('target')
-            if target and target not in result:
-                result[target] = {
-                    'type': 'section',
-                    'title': suggestion.get('title', ''),
-                    'content': suggestion.get('text', ''),
-                    'source': 'ml_suggestion'
-                }
+    print(f"Final result keys: {list(result.keys())}")
+    print("=" * 50)
     
     return result
 
-
 def build_document_from_structured_data(structure: Dict[str, Any], output_path: str) -> str:
     """
-    Собирает DOCX из структурированных данных (без ГОСТ)
+    Собирает DOCX из структурированных данных
     """
+    import json
+    from pathlib import Path
+    
+    print("=" * 50)
+    print("BUILDING DOCUMENT FROM STRUCTURE")
+    print(f"Structure keys: {list(structure.keys())}")
+    
+    # Проверяем наличие ML-секций
+    for section_key in ['introduction', 'theory', 'practice', 'conclusion']:
+        if section_key in structure:
+            section_data = structure[section_key]
+            print(f"✅ Found section '{section_key}':")
+            print(f"   Title: {section_data.get('title', 'no title')}")
+            print(f"   Content length: {len(section_data.get('content', ''))} chars")
+            print(f"   Content preview: {section_data.get('content', '')[:200]}...")
+        else:
+            print(f"❌ Section '{section_key}' NOT found in structure")
+    
     doc = Document()
     
-    # Устанавливаем базовые стили
+    # Настройка стилей
     style = doc.styles['Normal']
     style.font.name = settings.font_name
     style.font.size = Pt(settings.font_size_pt)
     
-    # Добавляем содержимое в правильном порядке
-    # 1. Сначала исходные параграфы (но без титульного листа)
-    # 2. Затем секции от ML
-    # 3. В конце библиографию
-    
-    # Функция для добавления текста с заголовками
-    def add_text_with_heading(doc: Document, text: str, is_heading: bool = False):
-        if is_heading:
-            doc.add_heading(text, level=1)
-        else:
-            p = doc.add_paragraph(text)
-            p.paragraph_format.first_line_indent = Cm(settings.first_line_indent_cm)
-            p.paragraph_format.line_spacing = settings.line_spacing
-    
-    # Добавляем исходные параграфы
-    for para in structure.get('paragraphs', []):
-        text = para.get('text', '') if isinstance(para, dict) else str(para)
-        if text.strip():
-            doc.add_paragraph(text)
-    
-    # Добавляем секции в определённом порядке
+    # Порядок секций
     section_order = ['introduction', 'theory', 'practice', 'conclusion']
+    section_titles = {
+        'introduction': 'Введение',
+        'theory': 'Теоретическая часть',
+        'practice': 'Практическая часть',
+        'conclusion': 'Заключение'
+    }
+    
+    added_count = 0
+    
+    # Добавляем секции от ML
     for section_key in section_order:
         section = structure.get(section_key)
         if section and isinstance(section, dict):
-            # Добавляем заголовок
-            doc.add_heading(section.get('title', section_key), level=1)
-            # Добавляем содержимое
+            title = section.get('title', section_titles.get(section_key, section_key))
             content = section.get('content', '')
-            if content:
+            
+            if content.strip():
+                doc.add_heading(title, level=1)
                 for para in content.split('\n'):
                     if para.strip():
-                        doc.add_paragraph(para.strip())
+                        p = doc.add_paragraph(para.strip())
+                        p.paragraph_format.first_line_indent = Cm(settings.first_line_indent_cm)
+                        p.paragraph_format.line_spacing = settings.line_spacing
+                added_count += 1
+                print(f"✅ Added section '{section_key}' with {len(content)} chars")
+            else:
+                print(f"⚠️ Section '{section_key}' has empty content")
+        else:
+            print(f"⚠️ Section '{section_key}' not found or not a dict")
+    
+    print(f"Total sections added: {added_count}")
     
     # Добавляем библиографию
     bibliography = structure.get('bibliography', [])
@@ -124,20 +154,13 @@ def build_document_from_structured_data(structure: Dict[str, Any], output_path: 
         for ref in bibliography:
             p = doc.add_paragraph(ref)
             p.style = 'List Number'
-    
-    # Добавляем таблицы
-    for table in structure.get('tables', []):
-        rows = table.get('rows', []) if isinstance(table, dict) else table
-        if rows:
-            tbl = doc.add_table(rows=len(rows), cols=len(rows[0]) if rows else 1)
-            tbl.style = 'Table Grid'
-            for i, row in enumerate(rows):
-                for j, cell_text in enumerate(row):
-                    tbl.cell(i, j).text = str(cell_text)
+        print(f"✅ Added bibliography with {len(bibliography)} items")
     
     doc.save(output_path)
+    print(f"Document saved to: {output_path}")
+    print("=" * 50)
+    
     return output_path
-
 
 def assemble_full_document(
     project_id: str,
