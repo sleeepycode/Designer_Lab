@@ -69,13 +69,6 @@ def attach_captions(blocks: list) -> list:
 def ensure_generated_captions(blocks: list) -> list:
     figure_num = 1
     table_num = 1
-
-<<<<<<< HEAD
-    for block in blocks:
-        if isinstance(block, ImageBlock):
-            if not block.caption:
-                block.caption = f"Рисунок {figure_num}"
-=======
     for i, block in enumerate(blocks):
         if isinstance(block, ImageBlock):
             if not block.caption:
@@ -85,23 +78,18 @@ def ensure_generated_captions(blocks: list) -> list:
                     if isinstance(blocks[j], ParagraphBlock) and blocks[j].text.strip():
                         description = blocks[j].text.strip()
                         break
-                block.caption = f"Рисунок {figure_num} – {description}"
->>>>>>> 497a3e5 (Обработка файла, применение титульного листа, по данным из формы в JSON формате. Валидация входного документа, сохранение ошибок и предупреждений в БД, если таковые имеются.)
+                block.caption = f"Рисунок {figure_num} – {description}" if description else f"Рисунок {figure_num}"
             figure_num += 1
 
         elif isinstance(block, TableBlock):
             if not block.caption:
-<<<<<<< HEAD
-                block.caption = f"Таблица {table_num}"
-=======
                 # Найти описание из предыдущего параграфа
                 description = ""
                 for j in range(i - 1, -1, -1):
                     if isinstance(blocks[j], ParagraphBlock) and blocks[j].text.strip():
                         description = blocks[j].text.strip()
                         break
-                block.caption = f"Таблица {table_num} – {description}"
->>>>>>> 497a3e5 (Обработка файла, применение титульного листа, по данным из формы в JSON формате. Валидация входного документа, сохранение ошибок и предупреждений в БД, если таковые имеются.)
+                block.caption = f"Таблица {table_num} – {description}" if description else f"Таблица {table_num}"
             table_num += 1
 
     return blocks

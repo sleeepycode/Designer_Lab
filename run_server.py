@@ -6,7 +6,6 @@ import os
 import sys
 import uvicorn
 
-# Добавить текущую директорию в path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app.core.config import settings
@@ -19,6 +18,6 @@ if __name__ == '__main__':
         port=settings.port,
         reload=settings.debug,
         factory=True,
-        reload_dirs=["./app"],  # ✅ Следить только за папкой app
-        reload_excludes=[".venv", "__pycache__", "*.pyc"],  # ✅ Исключить .venv
+        reload_dirs=["./app"],
+        reload_excludes=[".venv", "__pycache__", "*.pyc"],
     )

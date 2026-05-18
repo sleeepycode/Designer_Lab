@@ -1,29 +1,13 @@
-<<<<<<< HEAD
-from fastapi import FastAPI
-
-from app.api.tasks import router as tasks_router
-from app.core.config import settings, ensure_dirs
-from app.core.db import Base, engine
-=======
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from app.api.documents import router as documents_router
+from app.api.document_api import router as document_router
 from app.core.config import settings, ensure_dirs
-from app.core.db import Base, engine, ensure_schema_compatibility
->>>>>>> 497a3e5 (Обработка файла, применение титульного листа, по данным из формы в JSON формате. Валидация входного документа, сохранение ошибок и предупреждений в БД, если таковые имеются.)
 
 
 def create_app() -> FastAPI:
     ensure_dirs()
-    Base.metadata.create_all(bind=engine)
-<<<<<<< HEAD
-
-    app = FastAPI(title=settings.app_name, debug=settings.debug)
-    app.include_router(tasks_router)
-=======
-    ensure_schema_compatibility()
 
     app = FastAPI(
         title=settings.app_name,
@@ -31,7 +15,7 @@ def create_app() -> FastAPI:
         version='1.0.0',
         description='Microservice for document processing with GOST formatting'
     )
-    app.include_router(documents_router)
+    app.include_router(document_router)
 
     @app.exception_handler(HTTPException)
     async def http_exception_handler(_: Request, exc: HTTPException):
@@ -58,7 +42,6 @@ def create_app() -> FastAPI:
                 'details': exc.errors(),
             },
         )
->>>>>>> 497a3e5 (Обработка файла, применение титульного листа, по данным из формы в JSON формате. Валидация входного документа, сохранение ошибок и предупреждений в БД, если таковые имеются.)
 
     @app.get('/health')
     def healthcheck():

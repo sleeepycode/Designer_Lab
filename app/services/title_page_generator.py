@@ -3,35 +3,19 @@ from __future__ import annotations
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
 from docx.shared import Pt
-from docx.table import Table
-from docx.text.paragraph import Paragraph
 
 from app.core.config import settings
-from app.services.docx_extractor import iter_block_items
+from app.services.extractor import iter_block_items  # исправлен импорт
 
 
 TITLE_KEYWORDS = [
-    "министерство",
-    "университет",
-    "институт",
-    "кафедра",
-    "факультет",
-    "лабораторная работа",
-    "выполнил",
-    "проверил",
-    "руководитель",
-    "москва",
+    "министерство", "университет", "институт", "кафедра", "факультет",
+    "лабораторная работа", "выполнил", "проверил", "руководитель", "москва"
 ]
 
 BODY_START_KEYWORDS = [
-    "введение",
-    "цель работы",
-    "цель лабораторной работы",
-    "ход работы",
-    "теоретические сведения",
-    "практическая часть",
-    "выполнение работы",
-    "заключение",
+    "введение", "цель работы", "цель лабораторной работы", "ход работы",
+    "теоретические сведения", "практическая часть", "выполнение работы", "заключение"
 ]
 
 
@@ -51,24 +35,18 @@ def is_body_start(text: str) -> bool:
 
 def _find_body_start_index(blocks: list) -> int | None:
     for i, block in enumerate(blocks[:40]):
-        if isinstance(block, Paragraph):
-            text = block.text.strip()
-            if not text:
-                continue
-
-            if is_body_start(text):
+        if hasattr(block, 'text') and block.text.strip():
+            if is_body_start(block.text.strip()):
                 return i
     return None
 
 
 def remove_existing_title_page(doc: Document) -> None:
-    """
-    Удаляет существующий титульный лист из документа, если он найден.
-    """
+    """Удаляет существующий титульный лист из документа"""
     blocks = list(iter_block_items(doc))
     body_start_index = _find_body_start_index(blocks)
+    
     if body_start_index is not None and body_start_index > 0:
-        # Удалить блоки от 0 до body_start_index - 1
         body = doc.element.body
         children = list(body)
         for i in range(body_start_index):
@@ -78,14 +56,18 @@ def remove_existing_title_page(doc: Document) -> None:
 def generate_title_page(
     input_path: str,
     output_path: str,
+    faculty: str,           # <-- добавлено
     department: str,
     discipline: str,
     lab_number: str,
-    topic: str,
-    full_name: str,
-    group: str,
-    teacher: str
+    lab_title: str,         # <-- было topic
+    student_group: str,     # <-- было group
+    student_name: str,      # <-- было full_name
+    reviewer_name: str,     # <-- было teacher
 ) -> None:
+    """
+    Генерирует титульный лист по каноничному формату
+    """
     doc = Document(input_path)
 
     # Удалить существующий титульный лист, если есть
@@ -94,7 +76,7 @@ def generate_title_page(
     first_paragraph = doc.paragraphs[0] if doc.paragraphs else doc.add_paragraph()
 
     def insert_title_paragraph(text: str, alignment: WD_ALIGN_PARAGRAPH, size: int | float = None,
-                               bold: bool = False, space_before: float = 0, space_after: float = 0):
+                                  bold: bool = False, space_before: float = 0, space_after: float = 0):
         paragraph = first_paragraph.insert_paragraph_before(text)
         paragraph.alignment = alignment
         paragraph.paragraph_format.space_before = Pt(space_before)
@@ -113,17 +95,17 @@ def generate_title_page(
         ('', WD_ALIGN_PARAGRAPH.CENTER, None, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, None, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, None, False, 0, 0),
-        (f"{teacher}", WD_ALIGN_PARAGRAPH.RIGHT, settings.font_size_pt, False, 0, 0),
+        (f"{reviewer_name}", WD_ALIGN_PARAGRAPH.RIGHT, settings.font_size_pt, False, 0, 0),
         (f"Проверил:", WD_ALIGN_PARAGRAPH.RIGHT, settings.font_size_pt, False, 0, 0),
-        (f"{full_name}", WD_ALIGN_PARAGRAPH.RIGHT, settings.font_size_pt, False, 0, 0),
-        (f"Выполнил: студент группы {group}", WD_ALIGN_PARAGRAPH.RIGHT, settings.font_size_pt, False, 0, 0),
+        (f"{student_name}", WD_ALIGN_PARAGRAPH.RIGHT, settings.font_size_pt, False, 0, 0),
+        (f"Выполнил: студент группы {student_group}", WD_ALIGN_PARAGRAPH.RIGHT, settings.font_size_pt, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
-        (f'«{topic}»', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, True, 0, 0),
+        (f'«{lab_title}»', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, True, 0, 0),
         ('на тему:', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
         (f"по дисциплине «{discipline}»", WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
         (f"Отчет по лабораторной работе №{lab_number}", WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, True, 0, 0),

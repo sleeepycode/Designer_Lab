@@ -4,25 +4,13 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file='.env', extra='ignore')
-
-<<<<<<< HEAD
-    app_name: str = 'Lab Formatter MVP'
-    debug: bool = True
-=======
     app_name: str = 'Document Processing Service'
     debug: bool = True
     port: int = 8001
 
-    # Celery with SQLAlchemy backend
-    celery_broker_url: str = 'sqla+sqlite:///./celery_broker.db'
-    celery_result_backend: str = 'db+sqlite:///./celery_results.db'
-
-    # API Key для аутентификации
-    api_key: str = 'your-secret-api-key-change-in-env'
 
     # Main Backend callback
     main_backend_url: str = 'http://localhost:8000'
->>>>>>> 497a3e5 (Обработка файла, применение титульного листа, по данным из формы в JSON формате. Валидация входного документа, сохранение ошибок и предупреждений в БД, если таковые имеются.)
 
     storage_dir: str = 'storage'
     input_dir: str = 'storage/inputs'
