@@ -10,3 +10,4 @@ httpx
 kombu
 requests
 Pillow
+docx2pdf

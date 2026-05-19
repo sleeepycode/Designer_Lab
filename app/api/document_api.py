@@ -5,7 +5,7 @@ from uuid import uuid4
 from typing import Any, Dict
 import shutil
 import json
-from app.services.document_assembler import assemble_full_document
+from app.services.document_assembler import assemble_full_document, convert_docx_to_pdf
 from app.services.docx_core import ensure_project_dir
 
 from app.services.docx_core import (
@@ -183,3 +183,56 @@ async def get_project_info(
         'has_merged_data': has_merged,
         'files': files
     }
+
+@router.get('/download-pdf/{project_id}')
+async def download_pdf(project_id: str,):
+    """
+    Скачать готовый документ в формате PDF
+    
+    Конвертирует DOCX в PDF и возвращает файл.
+    Если PDF уже существует, возвращает его.
+    """
+    
+    project_dir = ensure_project_dir(project_id)
+    
+    possible_docx = [
+        project_dir / f'{project_id}_final.docx',
+        project_dir / f'{project_id}_result.docx',
+        project_dir / f'{project_id}.docx'
+    ]
+    
+    docx_path = None
+    for candidate in possible_docx:
+        if candidate.exists():
+            docx_path = candidate
+            break
+    
+    if not docx_path:
+        raise HTTPException(
+            status_code=404,
+            detail=f'DOCX file not found for project {project_id}. Looked for: {", ".join([str(f) for f in possible_docx])}'
+        )
+    
+    pdf_path = project_dir / f'{project_id}.pdf'
+    
+    if pdf_path.exists():
+        docx_mtime = docx_path.stat().st_mtime
+        pdf_mtime = pdf_path.stat().st_mtime
+        if pdf_mtime > docx_mtime:
+            return FileResponse(
+                path=str(pdf_path),
+                filename=f'{project_id}.pdf',
+                media_type='application/pdf'
+            )
+    
+    if not convert_docx_to_pdf(str(docx_path), str(pdf_path)):
+        raise HTTPException(
+            status_code=500,
+            detail='Failed to convert DOCX to PDF. Check that Microsoft Word or LibreOffice is installed.'
+        )
+    
+    return FileResponse(
+        path=str(pdf_path),
+        filename=f'{project_id}.pdf',
+        media_type='application/pdf'
+    )

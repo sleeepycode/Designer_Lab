@@ -4,6 +4,7 @@ from typing import Dict, Any
 from docx import Document
 from docx.shared import Pt, Cm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx2pdf import convert as docx_to_pdf
 import json
 from app.services.docx_core import ensure_project_dir, save_json
 from app.services.gost_applier import apply_gost_formatting
@@ -305,3 +306,29 @@ def assemble_full_document(
         'output_path': str(final_docx),
         'project_id': project_id
     }
+
+
+def convert_docx_to_pdf(docx_path: str, pdf_path: str) -> bool:
+    """
+    Конвертирует DOCX в PDF
+    
+    Args:
+        docx_path: путь к DOCX файлу
+        pdf_path: путь для сохранения PDF
+    
+    Returns:
+        True если успешно, False если ошибка
+    """
+    try:
+        logger.info(f"Converting DOCX to PDF: {docx_path} -> {pdf_path}")
+        docx_to_pdf(docx_path, pdf_path)
+        
+        if Path(pdf_path).exists():
+            logger.info(f"PDF created successfully: {pdf_path} ({Path(pdf_path).stat().st_size} bytes)")
+            return True
+        else:
+            logger.error(f"PDF file not created: {pdf_path}")
+            return False
+    except Exception as e:
+        logger.error(f"Failed to convert DOCX to PDF: {str(e)}")
+        return False
