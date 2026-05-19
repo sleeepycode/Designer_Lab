@@ -5,6 +5,7 @@ from uuid import uuid4
 from typing import Any, Dict
 import shutil
 from app.services.document_assembler import assemble_full_document
+from app.services.docx_core import ensure_project_dir
 
 from app.services.docx_core import (
     extract_docx,
@@ -99,7 +100,6 @@ async def apply_ml_changes_endpoint(
     """
     import json
     
-    # Парсим JSON тело запроса
     try:
         body = await request.json()
     except json.JSONDecodeError as e:
@@ -152,8 +152,6 @@ async def download_result(
     2. {project_id}_result.docx  
     3. {project_id}.docx
     """
-    from pathlib import Path
-    from app.services.docx_core import ensure_project_dir
     
     project_dir = ensure_project_dir(project_id)
     
@@ -191,8 +189,6 @@ async def get_project_info(
     """
     Получить информацию о проекте: какие файлы существуют
     """
-    from pathlib import Path
-    from app.services.docx_core import ensure_project_dir
     
     project_dir = ensure_project_dir(project_id)
     
@@ -205,11 +201,9 @@ async def get_project_info(
                 'modified': file.stat().st_mtime
             })
     
-    # Проверяем наличие extracted.json
     extracted_path = project_dir / 'extract_response.json'
     has_extracted = extracted_path.exists()
     
-    # Проверяем наличие merged_structure.json
     merged_path = project_dir / 'merged_structure.json'
     has_merged = merged_path.exists()
     

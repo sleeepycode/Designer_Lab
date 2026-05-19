@@ -1,16 +1,8 @@
-"""
-Сервис для полной сборки документа:
-- Объединение исходной структуры с ML-правками
-- Сборка DOCX из объединённой структуры
-- Применение ГОСТ и титульного листа
-"""
-
 from pathlib import Path
 from typing import Dict, Any
 from docx import Document
 from docx.shared import Pt, Cm
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-
+import json
 from app.services.docx_core import ensure_project_dir, save_json
 from app.services.gost_applier import apply_gost_formatting
 from app.services.title_page_generator import generate_title_page
@@ -24,8 +16,7 @@ def apply_ml_changes_to_structure(
     """
     Применяет правки ML к структуре.
     """
-    import json
-   
+
     print("=" * 50)
     print("ML_RESPONSE RECEIVED:")
     print(json.dumps(ml_response, ensure_ascii=False, indent=2)[:1000])
@@ -88,8 +79,6 @@ def build_document_from_structured_data(structure: Dict[str, Any], output_path: 
     """
     Собирает DOCX из структурированных данных
     """
-    import json
-    from pathlib import Path
     
     print("=" * 50)
     print("BUILDING DOCUMENT FROM STRUCTURE")
@@ -171,10 +160,6 @@ def assemble_full_document(
     """
     Полный пайплайн сборки документа
     """
-    from app.services.docx_core import ensure_project_dir, save_json
-    from app.services.gost_applier import apply_gost_formatting
-    from app.services.title_page_generator import generate_title_page
-    import json
     
     project_dir = ensure_project_dir(project_id)
     extracted_path = project_dir / 'extract_response.json'
