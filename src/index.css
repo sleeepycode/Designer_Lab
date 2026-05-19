@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    margin: 0;
+    min-height: 100vh;
+    color: #18181b;
+    background-color: #f5f3ff;
+    position: relative;
+    isolation: isolate;
+  }
+
+  /* Картинка фона — отдельным слоем, иначе градиент её перекрывает */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background-image: url('/assets/background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 10% -10%, rgba(147, 51, 234, 0.2), transparent),
+      radial-gradient(ellipse 60% 45% at 95% 5%, rgba(99, 102, 241, 0.14), transparent),
+      linear-gradient(180deg, rgba(250, 248, 255, 0.35) 0%, rgba(245, 243, 255, 0.5) 100%);
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .glass-bar {
+    @apply border-white/60 bg-white/75 backdrop-blur-xl;
+  }
+
+  .card-panel {
+    @apply rounded-2xl border border-white/70 bg-white/90 shadow-lg shadow-violet-500/10 backdrop-blur-md;
+  }
+
+  .card-panel-muted {
+    @apply rounded-xl border border-violet-100/80 bg-violet-50/50 px-4 py-3 text-sm text-zinc-700;
+  }
+
+  .btn-primary {
+    @apply rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand/30 transition hover:bg-brand-dark hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply rounded-full border border-violet-200 bg-white/80 px-6 py-2.5 text-sm font-semibold text-brand transition hover:border-brand/40 hover:bg-violet-50 disabled:opacity-50;
+  }
+
+  .input-field {
+    @apply w-full rounded-xl border border-violet-100 bg-white/90 px-3 py-2.5 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-brand/40 focus:ring-2 focus:ring-brand/25;
+  }
+
+  .dropzone {
+    @apply flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-violet-200/90 bg-white/50 px-6 py-12 transition hover:border-brand/50 hover:bg-violet-50/40;
+  }
+
+  .docx-preview-host .docx-wrapper {
+    background: transparent;
+    padding: 0;
+  }
+}
