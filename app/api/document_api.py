@@ -21,16 +21,13 @@ async def extract(file: UploadFile = File(...), project_id: str | None = Form(No
     if not file.filename.lower().endswith('.docx'):
         raise HTTPException(status_code=400, detail='Only .docx allowed')
 
-    # Генерируем project_id если не передан
     project_id = project_id or uuid4().hex
     project_dir = ensure_project_dir(project_id)
 
-    # СОХРАНЯЕМ ФАЙЛ С ИМЕНЕМ project_id, а не оригинальным
-    in_path = project_dir / f'{project_id}.docx'  # <-- ИСПРАВЛЕНО!
+    in_path = project_dir / f'{project_id}.docx'
     with in_path.open('wb') as f:
         shutil.copyfileobj(file.file, f)
 
-    # Создаём директорию для медиафайлов
     media_dir = project_dir / 'media'
     media_dir.mkdir(parents=True, exist_ok=True)
 
@@ -142,3 +139,84 @@ async def apply_ml_changes_endpoint(
         filename=f'{project_id}_result.docx',
         media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     )
+
+@router.get('/download/{project_id}')
+async def download_result(
+    project_id: str,
+):
+    """
+    Скачать готовый документ по project_id
+    
+    Ищет файлы в порядке приоритета:
+    1. {project_id}_final.docx
+    2. {project_id}_result.docx  
+    3. {project_id}.docx
+    """
+    from pathlib import Path
+    from app.services.docx_core import ensure_project_dir
+    
+    project_dir = ensure_project_dir(project_id)
+    
+    # Возможные имена файлов (в порядке приоритета)
+    possible_filenames = [
+        f'{project_id}_final.docx',
+        f'{project_id}_result.docx',
+        f'{project_id}.docx'
+    ]
+    
+    # Ищем первый существующий файл
+    output_path = None
+    for filename in possible_filenames:
+        candidate = project_dir / filename
+        if candidate.exists():
+            output_path = candidate
+            break
+    
+    if not output_path:
+        raise HTTPException(
+            status_code=404, 
+            detail=f'Файл не найден. Искали: {", ".join(possible_filenames)} в {project_dir}'
+        )
+    
+    return FileResponse(
+        path=str(output_path),
+        filename=f'{project_id}_result.docx',
+        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    )
+
+@router.get('/info/{project_id}')
+async def get_project_info(
+    project_id: str,
+):
+    """
+    Получить информацию о проекте: какие файлы существуют
+    """
+    from pathlib import Path
+    from app.services.docx_core import ensure_project_dir
+    
+    project_dir = ensure_project_dir(project_id)
+    
+    files = []
+    for file in project_dir.glob('*'):
+        if file.is_file():
+            files.append({
+                'name': file.name,
+                'size': file.stat().st_size,
+                'modified': file.stat().st_mtime
+            })
+    
+    # Проверяем наличие extracted.json
+    extracted_path = project_dir / 'extract_response.json'
+    has_extracted = extracted_path.exists()
+    
+    # Проверяем наличие merged_structure.json
+    merged_path = project_dir / 'merged_structure.json'
+    has_merged = merged_path.exists()
+    
+    return {
+        'project_id': project_id,
+        'project_dir': str(project_dir),
+        'has_extracted_data': has_extracted,
+        'has_merged_data': has_merged,
+        'files': files
+    }
