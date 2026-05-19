@@ -68,82 +68,97 @@ def extract_docx(docx_path: str, out_media_dir: str, project_id: str | None = No
     doc = Document(docx_path)
     image_files = extract_images_from_docx(docx_path, out_media_dir)
 
+    content_blocks = []
     paragraphs: List[Dict[str, Any]] = []
     tables: List[Dict[str, Any]] = []
     images: List[Dict[str, Any]] = []
 
     paragraph_count = 0
     table_count = 0
-    image_count = 0
+    image_index = 0
 
     for item in iter_block_items(doc):
         if isinstance(item, Paragraph):
             text = item.text.strip()
             has_image = paragraph_contains_drawing(item)
 
-            if has_image and image_count < len(image_files):
+            if has_image and image_index < len(image_files):
+                # Изображение внутри параграфа
                 image_meta = {
-                    'id': _make_id('image', image_count),
-                    'path': image_files[image_count],
+                    'id': _make_id('image', image_index),
+                    'path': image_files[image_index],
                     'source': 'original_docx_image',
                     'type': 'image',
                     'caption': None,
-                    'position': image_count,
+                    'position': image_index,
                     'context_text': text if text else None,
+                    'insert_before_paragraph': paragraph_count  # <-- привязка
                 }
                 images.append(image_meta)
-                image_count += 1
+                content_blocks.append({
+                    'type': 'image',
+                    'data': image_meta
+                })
+                image_index += 1
 
-                if text:
-                    paragraphs.append({
-                        'id': _make_id('paragraph', paragraph_count),
-                        'text': text,
-                        'source': 'original_docx_paragraph',
-                        'type': 'paragraph',
-                        'position': paragraph_count,
-                    })
-                    paragraph_count += 1
-            else:
-                if text:
-                    paragraphs.append({
-                        'id': _make_id('paragraph', paragraph_count),
-                        'text': text,
-                        'source': 'original_docx_paragraph',
-                        'type': 'paragraph',
-                        'position': paragraph_count,
-                    })
-                    paragraph_count += 1
+            if text:
+                para_meta = {
+                    'id': _make_id('paragraph', paragraph_count),
+                    'text': text,
+                    'source': 'original_docx_paragraph',
+                    'type': 'paragraph',
+                    'position': paragraph_count,
+                }
+                paragraphs.append(para_meta)
+                content_blocks.append({
+                    'type': 'paragraph',
+                    'data': para_meta
+                })
+                paragraph_count += 1
 
         elif isinstance(item, Table):
             table_data = []
             for row in item.rows:
                 row_data = [cell.text.strip() for cell in row.cells]
                 table_data.append(row_data)
-            tables.append({
+            table_meta = {
                 'id': _make_id('table', table_count),
                 'rows': table_data,
                 'source': 'original_docx_table',
                 'type': 'table',
                 'position': table_count,
+            }
+            tables.append(table_meta)
+            content_blocks.append({
+                'type': 'table',
+                'data': table_meta
             })
             table_count += 1
 
-    while image_count < len(image_files):
-        images.append({
-            'id': _make_id('image', image_count),
-            'path': image_files[image_count],
+    # Добавляем оставшиеся изображения (если есть)
+    while image_index < len(image_files):
+        image_meta = {
+            'id': _make_id('image', image_index),
+            'path': image_files[image_index],
             'source': 'original_docx_image',
             'type': 'image',
             'caption': None,
-            'position': image_count,
+            'position': image_index,
             'context_text': None,
+            'insert_before_paragraph': None
+        }
+        images.append(image_meta)
+        content_blocks.append({
+            'type': 'image',
+            'data': image_meta
         })
-        image_count += 1
+        image_index += 1
 
     result = {
         'paragraphs': paragraphs,
         'tables': tables,
         'images': images,
+        'content_blocks': content_blocks
     }
 
     if project_id:
