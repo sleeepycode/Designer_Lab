@@ -4,6 +4,7 @@ from pathlib import Path
 from uuid import uuid4
 from typing import Any, Dict
 import shutil
+import json
 from app.services.document_assembler import assemble_full_document
 from app.services.docx_core import ensure_project_dir
 
@@ -67,7 +68,6 @@ async def apply_ml_changes_endpoint(
     
     Возвращает готовый DOCX файл
     """
-    import json
     
     try:
         body = await request.json()
