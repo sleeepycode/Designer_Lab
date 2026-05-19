@@ -9,7 +9,6 @@ from app.services.docx_core import ensure_project_dir
 
 from app.services.docx_core import (
     extract_docx,
-    assemble_structure,
     ensure_project_dir,
     save_json,
 )
@@ -45,36 +44,6 @@ async def extract(file: UploadFile = File(...), project_id: str | None = Form(No
         'tables': result.get('tables', []),
         'images': result.get('images', [])
     })
-
-@router.post('/assemble')
-async def assemble(payload: Dict[str, Any] = Body(...)):
-    structure = payload.get('structure')
-    if not structure:
-        raise HTTPException(status_code=400, detail='Request body must include structure')
-
-    project_id = payload.get('project_id') or uuid4().hex
-    project_dir = ensure_project_dir(project_id)
-    ml_response = payload.get('ml_response')
-
-    if ml_response:
-        save_json(project_dir / 'ml_response.json', ml_response)
-
-    out_path = project_dir / 'result.docx'
-    res = assemble_structure(
-        structure,
-        str(out_path),
-        project_id=project_id,
-        ml_response=ml_response,
-    )
-
-    if res.get('status') != 'completed':
-        raise HTTPException(status_code=500, detail=f'Assemble failed: {res.get("error")}')
-
-    return FileResponse(
-        path=str(out_path),
-        filename='result.docx',
-        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    )
 
 
 @router.get('/health')
