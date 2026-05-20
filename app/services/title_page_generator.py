@@ -92,7 +92,6 @@ def generate_title_page(
         ('', WD_ALIGN_PARAGRAPH.CENTER, None, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, None, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, None, False, 0, 0),
-        ('', WD_ALIGN_PARAGRAPH.CENTER, None, False, 0, 0),
         (f"{reviewer_name}", WD_ALIGN_PARAGRAPH.RIGHT, settings.font_size_pt, False, 0, 0),
         (f"Проверил:", WD_ALIGN_PARAGRAPH.RIGHT, settings.font_size_pt, False, 0, 0),
         (f"{student_name}", WD_ALIGN_PARAGRAPH.RIGHT, settings.font_size_pt, False, 0, 0),
@@ -108,7 +107,7 @@ def generate_title_page(
         (f"Отчет по лабораторной работе №{lab_number}", WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, True, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
-        (f"Кафедра: «{department}»", WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
+        (f"Кафедра «{department}»", WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
         (settings.university_name, WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, True, 0, 0),
     ]
