@@ -2,14 +2,12 @@ import logging
 from pathlib import Path
 from typing import Dict, Any
 from docx import Document
-from docx.shared import Pt, Cm
-from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx2pdf import convert as docx_to_pdf
 import json
 from app.services.docx_core import ensure_project_dir, save_json
 from app.services.gost_applier import apply_gost_formatting
 from app.services.title_page_generator import generate_title_page
-from app.core.config import settings
+from app.services.styles import *
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -91,32 +89,15 @@ def apply_ml_changes_to_structure(
 
 def build_document_from_structured_data(structure: Dict[str, Any], output_path: str) -> str:
     """
-    Собирает DOCX из структурированных данных
+    Собирает DOCX из структурированных данных с использованием стилей
     """
     logger.info("=" * 50)
     logger.info("BUILDING DOCUMENT FROM STRUCTURE")
     logger.debug(f"Structure keys: {list(structure.keys())}")
     
-    # Проверяем наличие ML-секций
-    for section_key in ['introduction', 'theory', 'practice', 'conclusion']:
-        if section_key in structure:
-            section_data = structure[section_key]
-            logger.info(f"Found section '{section_key}':")
-            logger.debug(f"  Title: {section_data.get('title', 'no title')}")
-            logger.debug(f"  Content length: {len(section_data.get('content', ''))} chars")
-            content_preview = section_data.get('content', '')[:200]
-            if content_preview:
-                logger.debug(f"  Content preview: {content_preview}...")
-        else:
-            logger.debug(f"Section '{section_key}' NOT found in structure")
-    
     doc = Document()
     
-    # Настройка стилей
-    style = doc.styles['Normal']
-    style.font.name = settings.font_name
-    style.font.size = Pt(settings.font_size_pt)
-    logger.debug(f"Document styles configured: font={settings.font_name}, size={settings.font_size_pt}pt")
+    doc = setup_document_styles(doc)
     
     # Порядок секций
     section_order = ['introduction', 'theory', 'practice', 'conclusion']
@@ -137,19 +118,16 @@ def build_document_from_structured_data(structure: Dict[str, Any], output_path: 
             content = section.get('content', '')
             
             if content.strip():
-                doc.add_heading(title, level=1)
-                logger.debug(f"Added heading: {title}")
+                # Заголовок со стилем HeadingCenter
+                add_heading_center(doc, title)
                 
-                para_count = 0
+                # Содержимое со стилем GOSTText
                 for para in content.split('\n'):
                     if para.strip():
-                        p = doc.add_paragraph(para.strip())
-                        p.paragraph_format.first_line_indent = Cm(settings.first_line_indent_cm)
-                        p.paragraph_format.line_spacing = settings.line_spacing
-                        para_count += 1
+                        add_gost_paragraph(doc, para)
                 
                 added_count += 1
-                logger.info(f"Added section '{section_key}' with {len(content)} chars ({para_count} paragraphs)")
+                logger.info(f"Added section '{section_key}' with {len(content)} chars")
             else:
                 logger.warning(f"Section '{section_key}' has empty content, skipping")
         else:
@@ -157,15 +135,12 @@ def build_document_from_structured_data(structure: Dict[str, Any], output_path: 
     
     logger.info(f"Total ML sections added: {added_count}")
     
-    # Добавляем библиографию
     bibliography = structure.get('bibliography', [])
     if bibliography:
-        doc.add_heading('Список литературы', level=1)
-        logger.debug("Added bibliography heading")
+        add_heading_center(doc, 'Список литературы')
         
         for i, ref in enumerate(bibliography):
-            p = doc.add_paragraph(ref)
-            p.style = 'List Number'
+            add_bibliography_item(doc, i + 1, ref)
             logger.debug(f"  Bibliography item {i+1}: {ref[:50]}...")
         
         logger.info(f"Added bibliography with {len(bibliography)} items")
