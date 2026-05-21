@@ -1,9 +1,8 @@
 """
-Движок подсказок по изображениям проекта (таск 4).
+Подсказки по изображениям проекта (без OCR — распознавание текста делает ML).
 
-Поля как в ТЗ: тип, OCR, ключевые слова, место вставки, подпись.
-Без «выдуманного» OCR: текст берётся из Tesseract, если установлены Pillow + pytesseract + бинарник Tesseract.
-Иначе ocr_text пустой, в поле ocr_status — понятная причина.
+Backend №1 отдаёт тип, ключевые слова из имени файла, место вставки и подпись.
+ocr_text остаётся пустым, ocr_status = ml.
 """
 
 from __future__ import annotations
@@ -38,12 +37,9 @@ def _infer_image_type(img_path: Path, width: int | None, height: int | None) -> 
     return "photo"
 
 
-def _keywords_from_filename_and_ocr(stem: str, ocr_text: str, limit: int = 12) -> list[str]:
+def _keywords_from_filename(stem: str, limit: int = 12) -> list[str]:
     parts = re.split(r"[\s_\-–—.]+", stem)
     kws = [p for p in parts if len(p) > 1]
-    if ocr_text:
-        words = re.findall(r"[А-Яа-яA-Za-z]{3,}", ocr_text)
-        kws.extend(words[:20])
     seen: set[str] = set()
     out: list[str] = []
     for w in kws:
@@ -55,20 +51,6 @@ def _keywords_from_filename_and_ocr(stem: str, ocr_text: str, limit: int = 12) -
         if len(out) >= limit:
             break
     return out if out else ["изображение"]
-
-
-def _run_ocr_on_image(im) -> tuple[str, str | None]:
-    try:
-        import pytesseract
-    except ImportError:
-        return "", "Установите pytesseract (pip install pytesseract) и Tesseract OCR в системе."
-
-    try:
-        rgb = im.convert("RGB")
-        text = pytesseract.image_to_string(rgb, lang="rus+eng")
-        return (text.strip(), None)
-    except Exception as exc:
-        return "", str(exc)
 
 
 def build_image_suggestions_for_project(project_id: str) -> list[dict]:
@@ -89,35 +71,28 @@ def build_image_suggestions_for_project(project_id: str) -> list[dict]:
 
     for idx, img_path in enumerate(paths, start=1):
         width = height = None
-        ocr_text = ""
-        ocr_err: str | None = "Установите pillow (pip install pillow) для анализа изображений."
         if PILImage is not None:
             try:
                 with PILImage.open(img_path) as im:
                     width, height = im.size
-                    ocr_text, ocr_err = _run_ocr_on_image(im)
-            except Exception as exc:
-                ocr_err = str(exc)
+            except Exception:
+                pass
 
         image_type = _infer_image_type(img_path, width, height)
-        ocr_status = "ok" if ocr_text else ("error" if ocr_err else "empty")
-
-        keywords = _keywords_from_filename_and_ocr(img_path.stem, ocr_text)
+        keywords = _keywords_from_filename(img_path.stem)
         caption = f"Рисунок {idx} — {img_path.stem.replace('_', ' ')}"
 
-        item = {
+        suggestions.append({
             "id": _stable_suggestion_id(project_id, img_path),
             "image_path": str(img_path),
             "image_name": img_path.name,
             "image_type": image_type,
-            "ocr_text": ocr_text,
-            "ocr_status": ocr_status,
+            "ocr_text": "",
+            "ocr_status": "ml",
+            "ocr_error": "Распознавание текста выполняет ML-сервис при обработке документа.",
             "keywords": keywords,
             "suggested_insertion": "после раздела «Ход работы», перед разделом «Выводы»",
             "caption": caption,
             "applied": False,
-        }
-        if ocr_err:
-            item["ocr_error"] = ocr_err
-        suggestions.append(item)
+        })
     return suggestions

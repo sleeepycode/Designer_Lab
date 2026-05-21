@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.core.config import settings
+from app.core.errors import require_docx_upload, require_image_upload, raise_api_error
 from app.models.project import Project, ProjectStatus
 from app.models.task import DocumentTask, TaskStatus
 from app.schemas.project import (
@@ -21,7 +22,7 @@ from app.schemas.project import (
     ApplySuggestionsBody,
     ApplySuggestionsResponse,
 )
-from app.services.gost_module_client import call_gost_module_analyze
+from app.services import orchestrator
 from app.services.ml_image_suggestions import build_image_suggestions_for_project
 from app.services.project_docx import resolve_primary_project_docx
 from app.services.storage import (
@@ -33,16 +34,6 @@ from app.services.storage import (
 from app.services.task_pipeline import run_document_task_pipeline
 
 router = APIRouter(prefix="/projects", tags=["projects"])
-
-
-def _mock_analyze_project(project: Project) -> dict:
-    source_ext = Path(project.source_filename).suffix.lower()
-    return {
-        "model": "mock-ml-v1",
-        "source_extension": source_ext,
-        "summary": "Анализ выполнен успешно.",
-        "confidence": 0.97,
-    }
 
 
 def _ensure_project_owner(project: Project, user_id: str, action: str) -> None:
@@ -79,7 +70,7 @@ def _build_project_metadata(project: Project, extra: dict | None = None) -> dict
             "analysis": None,
             "ml_suggestions": [],
             "image_suggestions": [],
-            "gost_module_analysis": None,
+            "ml_analysis": None,
             "processing_errors": [],
         },
     }
@@ -92,10 +83,12 @@ def _build_project_metadata(project: Project, extra: dict | None = None) -> dict
 def upload_project_file(
     file: UploadFile = File(...),
     user_id: str | None = Form(default=None),
+    topic: str | None = Form(default=None, description="Тема работы для ML"),
     db: Session = Depends(get_db),
 ):
     if not file.filename:
-        raise HTTPException(status_code=400, detail="Имя файла отсутствует.")
+        raise_api_error("invalid_file_format", "Имя файла отсутствует.")
+    require_docx_upload(file.filename)
 
     project = Project(
         user_id=user_id,
@@ -114,7 +107,7 @@ def upload_project_file(
     except ValueError:
         project.status = ProjectStatus.ERROR
         db.commit()
-        raise HTTPException(status_code=400, detail="Поддерживаются только форматы .docx, .pdf, .png, .jpg.")
+        raise_api_error("invalid_file_format", "Некорректный формат файла. Поддерживается только DOCX.")
 
     metadata = {
         "db_snapshot": {
@@ -127,11 +120,12 @@ def upload_project_file(
         },
         "metadata": {
             "source_filename": project.source_filename,
+            "topic": (topic or "").strip() or None,
             "files": [{"path": source_path, "type": "input", "name": project.source_filename}],
             "analysis": None,
             "ml_suggestions": [],
             "image_suggestions": [],
-            "gost_module_analysis": None,
+            "ml_analysis": None,
             "processing_errors": [],
         },
     }
@@ -177,12 +171,16 @@ def upload_project_additional_file(
         raise HTTPException(status_code=404, detail="Проект не найден.")
     _ensure_project_owner(project, user_id, "загружать файлы")
     if not file.filename:
-        raise HTTPException(status_code=400, detail="Имя файла отсутствует.")
+        raise_api_error("invalid_file_format", "Имя файла отсутствует.")
+    require_image_upload(file.filename)
 
     try:
         file_path = save_project_source_file(project_id, file)
     except ValueError:
-        raise HTTPException(status_code=400, detail="Поддерживаются только форматы .docx, .pdf, .png, .jpg.")
+        raise_api_error(
+            "invalid_file_format",
+            "Некорректный формат файла. Для доп. загрузки поддерживаются только PNG и JPG.",
+        )
 
     path_obj = Path(file_path)
     file_type = "image" if path_obj.parent.name == "images" else "input"
@@ -239,12 +237,11 @@ def process_project_document(
     student_name: str = Form(...),
     reviewer_name: str = Form(...),
     discipline: str = Form(...),
+    topic: str | None = Form(default=None, description="Тема для ML (если не задана при upload)"),
     db: Session = Depends(get_db),
 ):
     """
-    Одна кнопка «Обработать»: берём DOCX из проекта, создаём задачу, запускаем тот же пайплайн, что POST /tasks.
-    Готовый файл кладём в output проекта (через пайплайн). Ошибки — в metadata.processing_errors и статус error.
-    После успеха генерируются mock-подсказки по картинкам (позже — реальный ML).
+    Связка: doc-service (extract) → ML → doc-service (apply + ГОСТ) → готовый файл на скачивание.
     """
     project = db.get(Project, project_id)
     if not project:
@@ -301,6 +298,13 @@ def process_project_document(
     db.commit()
 
     input_path = copy_project_file_to_task_input(task.id, docx_path)
+
+    if topic and topic.strip():
+        metadata = read_project_metadata(project.id) or _build_project_metadata(project)
+        mb = metadata.get("metadata", {})
+        mb["topic"] = topic.strip()
+        metadata["metadata"] = mb
+        write_project_metadata(project.id, metadata)
 
     try:
         result = run_document_task_pipeline(db, task, project, input_path)
@@ -492,29 +496,36 @@ def analyze_project(
         raise HTTPException(status_code=404, detail="Проект не найден.")
     _ensure_project_owner(project, user_id, "запускать анализ")
 
-    project.status = ProjectStatus.ANALYZING
-    db.commit()
-
     try:
-        analysis_result = _mock_analyze_project(project)
         docx_path = resolve_primary_project_docx(project)
-        if docx_path and docx_path.is_file():
-            try:
-                gost_data = call_gost_module_analyze(docx_path)
-                if gost_data:
-                    analysis_result["gost_module"] = gost_data
-            except Exception as exc:
-                analysis_result["gost_module_error"] = str(exc)
+        if not docx_path:
+            raise HTTPException(status_code=400, detail="В проекте нет DOCX для анализа.")
+
+        extracted = orchestrator.extract_via_doc_service(docx_path, project.id)
+        document_text = orchestrator.text_from_extracted(extracted, str(docx_path))
+        image_paths = orchestrator.collect_image_paths(project, extracted, lambda pid: Path(settings.projects_dir) / pid)
+
+        metadata = read_project_metadata(project.id) or _build_project_metadata(project)
+        topic_value = orchestrator.topic_from_context(
+            None,
+            metadata.get("metadata", {}).get("topic") or project.source_filename,
+        )
+
+        project.status = ProjectStatus.ANALYZING
+        db.commit()
+        try:
+            analysis_result = orchestrator.run_ml_analysis(document_text, image_paths, topic_value)
+        except Exception:
+            project.status = ProjectStatus.ERROR
+            db.commit()
+            raise
+
         project.status = ProjectStatus.READY
         db.commit()
-        metadata = read_project_metadata(project.id) or _build_project_metadata(project)
         metadata_block = metadata.get("metadata", {})
         metadata_block["analysis"] = analysis_result
-        metadata_block["gost_module_analysis"] = analysis_result.get("gost_module")
-        metadata_block["ml_suggestions"] = [
-            "Проверить корректность титульного листа.",
-            "Сверить формат ссылок с требованиями ГОСТ.",
-        ]
+        metadata_block["ml_analysis"] = analysis_result
+        metadata_block["ml_suggestions"] = analysis_result.get("content_suggestions") or []
         metadata_block["processing_errors"] = []
         metadata["metadata"] = metadata_block
         metadata["db_snapshot"] = {

@@ -25,7 +25,8 @@ def get_report_path(task_id: str) -> str:
     return str(Path(settings.report_dir) / f'{task_id}.json')
 
 
-ALLOWED_PROJECT_EXTENSIONS = {".docx", ".pdf", ".png", ".jpg", ".jpeg"}
+ALLOWED_PROJECT_INPUT_EXTENSIONS = {".docx"}
+ALLOWED_PROJECT_IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg"}
 
 
 def get_project_root(project_id: str) -> Path:
@@ -45,11 +46,13 @@ def ensure_project_dirs(project_id: str) -> dict[str, Path]:
 
 def save_project_source_file(project_id: str, upload_file: UploadFile) -> str:
     ext = Path(upload_file.filename).suffix.lower()
-    if ext not in ALLOWED_PROJECT_EXTENSIONS:
-        raise ValueError("Неподдерживаемый формат файла.")
-
     dirs = ensure_project_dirs(project_id)
-    target_dir = dirs["images"] if ext in {".png", ".jpg", ".jpeg"} else dirs["input"]
+    if ext in ALLOWED_PROJECT_IMAGE_EXTENSIONS:
+        target_dir = dirs["images"]
+    elif ext in ALLOWED_PROJECT_INPUT_EXTENSIONS:
+        target_dir = dirs["input"]
+    else:
+        raise ValueError("Неподдерживаемый формат файла.")
     safe_name = Path(upload_file.filename).name
     path = target_dir / safe_name
     with path.open("wb") as f:

@@ -65,11 +65,7 @@ def _form_data():
 
 def _valid_docx_bytes() -> bytes:
     doc = Document()
-    long_text = ("Тестовый текст " * 260).strip()
-    doc.add_paragraph(long_text)
-    table = doc.add_table(rows=1, cols=2)
-    table.cell(0, 0).text = "A"
-    table.cell(0, 1).text = "B"
+    doc.add_paragraph("Тестовый текст лабораторной работы.")
     stream = BytesIO()
     doc.save(stream)
     return stream.getvalue()
@@ -77,7 +73,6 @@ def _valid_docx_bytes() -> bytes:
 
 def _invalid_by_rules_docx_bytes() -> bytes:
     doc = Document()
-    doc.add_paragraph("Короткий текст")
     stream = BytesIO()
     doc.save(stream)
     return stream.getvalue()
@@ -125,7 +120,9 @@ def test_create_task_rejects_non_docx(client: TestClient):
     }
     resp = client.post("/tasks", data=_form_data(), files=files)
     assert resp.status_code == 400
-    assert "DOCX" in _error_message(resp)
+    body = resp.json()
+    assert body.get("code") == "invalid_file_format"
+    assert "DOCX" in body.get("message", "")
 
 
 def test_create_task_rejects_empty_docx(client: TestClient):

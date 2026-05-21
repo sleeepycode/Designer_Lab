@@ -7,6 +7,7 @@ from sqlalchemy import select
 
 from app.core.db import get_db
 from app.core.config import settings
+from app.core.errors import require_docx_upload, raise_api_error
 from app.models.task import DocumentTask, TaskStatus
 from app.models.project import Project, ProjectStatus
 from app.schemas.task import (
@@ -18,8 +19,7 @@ from app.schemas.task import (
 )
 from app.services.storage import save_input_file, get_output_path, get_report_path
 from app.services.task_pipeline import run_document_task_pipeline
-from app.services.docx_extractor import extract_docx_content
-from app.services.title_page_generator import generate_title_page
+from app.services import orchestrator
 
 router = APIRouter(prefix='/tasks', tags=['tasks'])
 
@@ -53,8 +53,7 @@ def create_task(
     discipline: str =  Form(...),
     db: Session = Depends(get_db),
 ):
-    if not file.filename or not file.filename.lower().endswith('.docx'):
-        raise HTTPException(status_code=400, detail='Поддерживается только формат DOCX.')
+    require_docx_upload(file.filename)
 
     project: Project | None = None
     if project_id:
@@ -206,8 +205,7 @@ def extract_docx(
     user_id: str | None = Form(default=None),
     db: Session = Depends(get_db),
 ):
-    if not file.filename or not file.filename.lower().endswith('.docx'):
-        raise HTTPException(status_code=400, detail='Поддерживается только формат DOCX.')
+    require_docx_upload(file.filename)
 
     task = DocumentTask(
         user_id=user_id,
@@ -229,11 +227,9 @@ def extract_docx(
         db.commit()
         raise HTTPException(status_code=400, detail='Входной файл пустой.')
 
-    output_dir = Path(settings.storage_dir) / 'extracted' / str(task.id)
-    output_dir.mkdir(parents=True, exist_ok=True)
-
     try:
-        content = extract_docx_content(input_path, str(output_dir))
+        raw = orchestrator.extract_via_doc_service(Path(input_path), task.id)
+        content = orchestrator.normalize_extract_for_frontend(raw)
         task.status = TaskStatus.COMPLETED
         db.commit()
         return content
@@ -242,107 +238,3 @@ def extract_docx(
         task.errors = [str(e)]
         db.commit()
         raise HTTPException(status_code=400, detail=f'Ошибка извлечения: {str(e)}')
-
-
-@router.post('/apply-gost')
-def apply_gost(
-    file: UploadFile = File(...),
-    user_id: str | None = Form(default=None),
-    db: Session = Depends(get_db),
-):
-    if not file.filename or not file.filename.lower().endswith('.docx'):
-        raise HTTPException(status_code=400, detail='Поддерживается только формат DOCX.')
-
-    task = DocumentTask(
-        user_id=user_id,
-        original_filename=file.filename,
-        input_path='',
-        payload={},
-        status=TaskStatus.CREATED,
-        errors=[],
-        warnings=[],
-    )
-    db.add(task)
-    db.commit()
-    db.refresh(task)
-
-    input_path = save_input_file(task.id, file)
-    if Path(input_path).stat().st_size == 0:
-        task.status = TaskStatus.FAILED
-        task.errors = ['Входной файл пустой.']
-        db.commit()
-        raise HTTPException(status_code=400, detail='Входной файл пустой.')
-
-    output_path = get_output_path(task.id)
-
-    try:
-        from app.services.gost_applier import apply_gost_formatting
-        apply_gost_formatting(input_path, output_path)
-        task.status = TaskStatus.COMPLETED
-        task.output_path = output_path
-        db.commit()
-        return FileResponse(output_path, media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document', filename=f'{task.id}_gost.docx')
-    except Exception as e:
-        task.status = TaskStatus.FAILED
-        task.errors = [str(e)]
-        db.commit()
-        raise HTTPException(status_code=400, detail=f'Ошибка применения ГОСТ: {str(e)}')
-
-
-@router.post('/generate-title')
-def generate_title(
-    file: UploadFile = File(...),
-    department: str = Form(...),
-    discipline: str = Form(...),
-    lab_number: str = Form(...),
-    topic: str = Form(...),
-    full_name: str = Form(...),
-    group: str = Form(...),
-    teacher: str = Form(...),
-    user_id: str | None = Form(default=None),
-    db: Session = Depends(get_db),
-):
-    if not file.filename or not file.filename.lower().endswith('.docx'):
-        raise HTTPException(status_code=400, detail='Поддерживается только формат DOCX.')
-
-    task = DocumentTask(
-        user_id=user_id,
-        original_filename=file.filename,
-        input_path='',
-        payload={
-            'department': department,
-            'discipline': discipline,
-            'lab_number': lab_number,
-            'topic': topic,
-            'full_name': full_name,
-            'group': group,
-            'teacher': teacher,
-        },
-        status=TaskStatus.CREATED,
-        errors=[],
-        warnings=[],
-    )
-    db.add(task)
-    db.commit()
-    db.refresh(task)
-
-    input_path = save_input_file(task.id, file)
-    if Path(input_path).stat().st_size == 0:
-        task.status = TaskStatus.FAILED
-        task.errors = ['Входной файл пустой.']
-        db.commit()
-        raise HTTPException(status_code=400, detail='Входной файл пустой.')
-
-    output_path = get_output_path(task.id)
-
-    try:
-        generate_title_page(input_path, output_path, department, discipline, lab_number, topic, full_name, group, teacher)
-        task.status = TaskStatus.COMPLETED
-        task.output_path = output_path
-        db.commit()
-        return FileResponse(output_path, media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document', filename=f'{task.id}_with_title.docx')
-    except Exception as e:
-        task.status = TaskStatus.FAILED
-        task.errors = [str(e)]
-        db.commit()
-        raise HTTPException(status_code=400, detail=f'Ошибка генерации титульного листа: {str(e)}')

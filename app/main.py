@@ -3,9 +3,11 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.api.auth import router as auth_router
 from app.api.tasks import router as tasks_router
 from app.api.projects import router as projects_router
 from app.core.config import settings, ensure_dirs, get_cors_origins
+from app.services.orchestrator import check_integrations
 
 
 def create_app() -> FastAPI:
@@ -19,6 +21,7 @@ def create_app() -> FastAPI:
         allow_methods=['*'],
         allow_headers=['*'],
     )
+    app.include_router(auth_router)
     app.include_router(tasks_router)
     app.include_router(projects_router)
 
@@ -50,7 +53,13 @@ def create_app() -> FastAPI:
 
     @app.get('/health')
     def healthcheck():
-        return {'status': 'ok'}
+        integrations = check_integrations()
+        all_ok = integrations['doc_service'].get('ok') and integrations['ml'].get('ok')
+        return {
+            'status': 'ok',
+            'integrations': integrations,
+            'integrations_ok': all_ok,
+        }
 
     return app
 

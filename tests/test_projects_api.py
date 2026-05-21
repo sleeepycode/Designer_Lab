@@ -23,11 +23,7 @@ def _docx_bytes() -> bytes:
 
 def _valid_processing_docx_bytes() -> bytes:
     doc = Document()
-    long_text = ("Тестовый текст " * 260).strip()
-    doc.add_paragraph(long_text)
-    table = doc.add_table(rows=1, cols=2)
-    table.cell(0, 0).text = "A"
-    table.cell(0, 1).text = "B"
+    doc.add_paragraph("Тестовый текст лабораторной работы.")
     stream = BytesIO()
     doc.save(stream)
     return stream.getvalue()
@@ -93,7 +89,9 @@ def test_upload_project_file_rejects_unsupported_extension(tmp_path):
         files = {"file": ("notes.txt", b"text", "text/plain")}
         resp = client.post("/projects/upload", files=files)
         assert resp.status_code == 400
-        assert "Поддерживаются только форматы" in resp.json()["message"]
+        body = resp.json()
+        assert body["code"] == "invalid_file_format"
+        assert "DOCX" in body["message"]
 
 
 def test_download_project_result_returns_latest_completed_output(tmp_path):
@@ -227,9 +225,9 @@ def test_project_analyze_and_get_analysis(tmp_path):
     with _client(tmp_path) as client:
         files = {
             "file": (
-                "source.pdf",
-                b"%PDF-1.4 test content",
-                "application/pdf",
+                "source.docx",
+                _valid_processing_docx_bytes(),
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             )
         }
         upload_resp = client.post("/projects/upload", data={"user_id": "user-1"}, files=files)
@@ -240,18 +238,15 @@ def test_project_analyze_and_get_analysis(tmp_path):
         assert analyze_resp.status_code == 200
         analyze_body = analyze_resp.json()
         assert analyze_body["status"] == "ready"
-        assert "analysis" in analyze_body
-        assert analyze_body["analysis"]["source_extension"] == ".pdf"
+        assert analyze_body["analysis"]["success"] is True
 
         get_resp = client.get(f"/projects/{project_id}/analysis?user_id=user-1")
         assert get_resp.status_code == 200
-        get_body = get_resp.json()
-        assert get_body["analysis"]["model"] == "mock-ml-v1"
+        assert get_resp.json()["analysis"]["success"] is True
 
         metadata_path = Path(settings.projects_dir) / project_id / "metadata.json"
         metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-        assert metadata["metadata"]["analysis"]["model"] == "mock-ml-v1"
-        assert len(metadata["metadata"]["ml_suggestions"]) > 0
+        assert metadata["metadata"]["analysis"]["success"] is True
 
 
 def test_upload_additional_files_to_existing_project_separates_input_and_images(tmp_path):
@@ -267,21 +262,6 @@ def test_upload_additional_files_to_existing_project_separates_input_and_images(
         assert create_resp.status_code == 200
         project_id = create_resp.json()["project_id"]
 
-        docx_files = {
-            "file": (
-                "extra.docx",
-                _docx_bytes(),
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            )
-        }
-        add_docx_resp = client.post(
-            f"/projects/{project_id}/files",
-            data={"user_id": "user-1"},
-            files=docx_files,
-        )
-        assert add_docx_resp.status_code == 200
-        assert add_docx_resp.json()["file_type"] == "input"
-
         image_files = {"file": ("scan.jpg", b"jpeg-bytes", "image/jpeg")}
         add_image_resp = client.post(
             f"/projects/{project_id}/files",
@@ -292,13 +272,12 @@ def test_upload_additional_files_to_existing_project_separates_input_and_images(
         assert add_image_resp.json()["file_type"] == "image"
 
         project_dir = Path(settings.projects_dir) / project_id
-        assert (project_dir / "input" / "extra.docx").exists()
         assert (project_dir / "images" / "scan.jpg").exists()
 
         metadata_path = project_dir / "metadata.json"
         metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
         file_names = {item["name"] for item in metadata["metadata"]["files"]}
-        assert "extra.docx" in file_names
+        assert "base.docx" in file_names
         assert "scan.jpg" in file_names
 
 

@@ -9,9 +9,9 @@ from app.core.db import Base
 
 
 class ProjectStatus(str, enum.Enum):
-    UPLOADED = "uploaded"
-    PROCESSING = "processing"
-    ANALYZING = "analyzing"
+    UPLOADED = "uploaded"      # файл загружен
+    PROCESSING = "processing"  # оркестрация: валидация, doc-service (не ML)
+    ANALYZING = "analyzing"    # документ/данные у ML
     READY = "ready"
     ERROR = "error"
 
