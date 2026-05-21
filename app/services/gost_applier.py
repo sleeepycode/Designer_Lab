@@ -37,29 +37,3 @@ def apply_gost_formatting(docx_path: str, output_path: str) -> None:
         section.right_margin = Cm(settings.margin_right_cm)
 
     doc.save(output_path)
-
-
-def process_document(input_path: str, output_path: str, payload: dict) -> dict:
-    """
-    Обрабатывает документ: применяет ГОСТ форматирование.
-
-    :param input_path: Путь к входному файлу
-    :param output_path: Путь к выходному файлу
-    :param payload: Данные из формы (не используется в текущей реализации)
-    :return: Отчет о обработке
-    """
-    try:
-        apply_gost_formatting(input_path, output_path)
-        return {
-            'status': 'completed',
-            'errors': [],
-            'warnings': [],
-            'fixes': []
-        }
-    except Exception as e:
-        return {
-            'status': 'failed',
-            'errors': [str(e)],
-            'warnings': [],
-            'fixes': []
-        }
