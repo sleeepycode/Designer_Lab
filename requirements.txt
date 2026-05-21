@@ -9,7 +9,6 @@ python-multipart
 python-docx
 pytest
 httpx
-pillow
 PyJWT
 bcrypt
 email-validator

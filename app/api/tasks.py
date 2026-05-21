@@ -17,7 +17,8 @@ from app.schemas.task import (
     TaskHistoryResponse,
     TaskDeleteResponse,
 )
-from app.services.storage import save_input_file, get_output_path, get_report_path
+from app.services.download_files import resolve_task_output, task_output_flags
+from app.services.storage import save_input_file, get_report_path
 from app.services.task_pipeline import run_document_task_pipeline
 from app.services import orchestrator
 
@@ -130,6 +131,7 @@ def get_task(task_id: str, db: Session = Depends(get_db)):
     if not task:
         raise HTTPException(status_code=404, detail='Задача не найдена.')
 
+    flags = task_output_flags(task)
     return TaskStatusResponse(
         task_id=task.id,
         user_id=task.user_id,
@@ -137,7 +139,9 @@ def get_task(task_id: str, db: Session = Depends(get_db)):
         status=task.status.value,
         errors=task.errors or [],
         warnings=task.warnings or [],
-        has_output=bool(task.output_path),
+        has_output=flags['has_output'],
+        has_output_pdf=flags['has_output_pdf'],
+        has_output_docx=flags['has_output_docx'],
         has_report=bool(task.report_path),
     )
 
@@ -146,16 +150,23 @@ def get_task(task_id: str, db: Session = Depends(get_db)):
 def download_result(
     task_id: str,
     user_id: str = Query(..., description='Идентификатор пользователя'),
+    format: str = Query(
+        default='pdf',
+        alias='format',
+        description='Формат: pdf или docx',
+    ),
     db: Session = Depends(get_db),
 ):
     task = db.get(DocumentTask, task_id)
-    if not task or not task.output_path:
-        raise HTTPException(status_code=404, detail='Готовый файл не найден.')
+    if not task:
+        raise HTTPException(status_code=404, detail='Задача не найдена.')
     if not task.user_id:
         raise HTTPException(status_code=403, detail='У задачи не задан владелец. Скачивание запрещено.')
     if task.user_id != user_id:
         raise HTTPException(status_code=403, detail='Нельзя скачать файл другой пользователя.')
-    return FileResponse(task.output_path, media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document', filename=f'{task_id}.docx')
+    fmt = format.lower().strip()
+    path, media_type, filename = resolve_task_output(task, fmt)
+    return FileResponse(str(path), media_type=media_type, filename=filename)
 
 
 @router.get('/{task_id}/report')
@@ -188,10 +199,13 @@ def delete_task(
     if task.user_id != user_id:
         raise HTTPException(status_code=403, detail='Нельзя удалить задачу другого пользователя.')
 
-    for file_path in [task.input_path, task.output_path, task.report_path]:
+    paths_to_delete = [task.input_path, task.report_path, task.output_path]
+    output_paths = (task.payload or {}).get('output_paths') or {}
+    paths_to_delete.extend(output_paths.values())
+    for file_path in paths_to_delete:
         if file_path:
             path = Path(file_path)
-            if path.exists():
+            if path.is_file():
                 path.unlink()
 
     db.delete(task)

@@ -14,5 +14,6 @@ storage/
 
 .pytest_cache/
 
-# Локальная копия ML-ветки рядом с бэком — не коммитить
+# Локальные копии ML / doc-service — не коммитить
 Designer_Lab_ML/
+ML_module/

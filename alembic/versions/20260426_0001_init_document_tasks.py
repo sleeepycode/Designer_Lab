@@ -22,9 +22,7 @@ task_status_enum = sa.Enum("created", "completed", "failed", name="task_status")
 
 
 def upgrade() -> None:
-    bind = op.get_bind()
-    task_status_enum.create(bind, checkfirst=True)
-
+    # Enum создаётся один раз при create_table (явный .create() дублировал тип).
     op.create_table(
         "document_tasks",
         sa.Column("id", sa.String(), nullable=False),

@@ -7,11 +7,13 @@ from app.api.auth import router as auth_router
 from app.api.tasks import router as tasks_router
 from app.api.projects import router as projects_router
 from app.core.config import settings, ensure_dirs, get_cors_origins
+from app.core.db import init_db
 from app.services.orchestrator import check_integrations
 
 
 def create_app() -> FastAPI:
     ensure_dirs()
+    init_db()
 
     app = FastAPI(title=settings.app_name, debug=settings.debug)
     app.add_middleware(
@@ -54,11 +56,13 @@ def create_app() -> FastAPI:
     @app.get('/health')
     def healthcheck():
         integrations = check_integrations()
-        all_ok = integrations['doc_service'].get('ok') and integrations['ml'].get('ok')
+        doc_ok = integrations['doc_service'].get('ok')
+        ml_ok = integrations.get('ml', {}).get('ok', True) if 'ml' in integrations else True
         return {
             'status': 'ok',
             'integrations': integrations,
-            'integrations_ok': all_ok,
+            'integrations_ok': doc_ok and ml_ok,
+            'note': 'DOCX/ГОСТ — doc-service; изображения — ML (если ml_service_base_url задан).',
         }
 
     return app

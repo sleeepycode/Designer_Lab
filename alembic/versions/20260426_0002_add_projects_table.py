@@ -22,9 +22,6 @@ project_status_enum = sa.Enum("created", "uploaded", "processing", "ready", "err
 
 
 def upgrade() -> None:
-    bind = op.get_bind()
-    project_status_enum.create(bind, checkfirst=True)
-
     op.create_table(
         "projects",
         sa.Column("id", sa.String(), nullable=False),

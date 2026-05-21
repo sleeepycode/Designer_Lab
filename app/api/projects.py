@@ -23,12 +23,13 @@ from app.schemas.project import (
     ApplySuggestionsResponse,
 )
 from app.services import orchestrator
-from app.services.ml_image_suggestions import build_image_suggestions_for_project
+from app.services import project_metadata as pm
+from app.services.download_files import resolve_project_output
+from app.services.image_suggestions_engine import build_image_suggestions_from_metadata
+from app.services.ml_image_analysis import register_uploaded_image_in_metadata
 from app.services.project_docx import resolve_primary_project_docx
 from app.services.storage import (
     save_project_source_file,
-    write_project_metadata,
-    read_project_metadata,
     copy_project_file_to_task_input,
 )
 from app.services.task_pipeline import run_document_task_pipeline
@@ -41,42 +42,6 @@ def _ensure_project_owner(project: Project, user_id: str, action: str) -> None:
         raise HTTPException(status_code=403, detail=f"У проекта не задан владелец. {action} запрещено.")
     if project.user_id != user_id:
         raise HTTPException(status_code=403, detail=f"Нельзя {action} для проекта другого пользователя.")
-
-
-def _snapshot_project_row(project: Project) -> dict:
-    return {
-        "project_id": project.id,
-        "user_id": project.user_id,
-        "status": project.status.value,
-        "source_path": project.source_path,
-        "created_at": project.created_at.isoformat() if project.created_at else None,
-        "updated_at": project.updated_at.isoformat() if project.updated_at else None,
-    }
-
-
-def _build_project_metadata(project: Project, extra: dict | None = None) -> dict:
-    metadata = {
-        "db_snapshot": {
-            "project_id": project.id,
-            "user_id": project.user_id,
-            "status": project.status.value,
-            "source_path": project.source_path,
-            "created_at": project.created_at.isoformat() if project.created_at else None,
-            "updated_at": project.updated_at.isoformat() if project.updated_at else None,
-        },
-        "metadata": {
-            "source_filename": project.source_filename,
-            "files": [],
-            "analysis": None,
-            "ml_suggestions": [],
-            "image_suggestions": [],
-            "ml_analysis": None,
-            "processing_errors": [],
-        },
-    }
-    if extra:
-        metadata["metadata"].update(extra)
-    return metadata
 
 
 @router.post("/upload", response_model=ProjectUploadResponse)
@@ -109,27 +74,14 @@ def upload_project_file(
         db.commit()
         raise_api_error("invalid_file_format", "Некорректный формат файла. Поддерживается только DOCX.")
 
-    metadata = {
-        "db_snapshot": {
-            "project_id": project.id,
-            "user_id": user_id,
-            "status": ProjectStatus.UPLOADED.value,
-            "source_path": source_path,
-            "created_at": project.created_at.isoformat() if project.created_at else None,
-            "updated_at": project.updated_at.isoformat() if project.updated_at else None,
-        },
-        "metadata": {
-            "source_filename": project.source_filename,
-            "topic": (topic or "").strip() or None,
-            "files": [{"path": source_path, "type": "input", "name": project.source_filename}],
-            "analysis": None,
-            "ml_suggestions": [],
-            "image_suggestions": [],
-            "ml_analysis": None,
-            "processing_errors": [],
-        },
-    }
-    metadata_path = write_project_metadata(project.id, metadata)
+    meta = pm.empty(
+        project.id,
+        status=ProjectStatus.UPLOADED.value,
+        topic=(topic or "").strip() or None,
+        source_filename=project.source_filename,
+    )
+    pm.set_input_file(meta, source_path)
+    metadata_path = pm.save(project, meta)
 
     project.source_path = source_path
     project.metadata_path = metadata_path
@@ -185,21 +137,13 @@ def upload_project_additional_file(
     path_obj = Path(file_path)
     file_type = "image" if path_obj.parent.name == "images" else "input"
 
-    metadata = read_project_metadata(project.id) or _build_project_metadata(project)
-    metadata_block = metadata.get("metadata", {})
-    files_payload = metadata_block.get("files", [])
-    files_payload.append({"path": file_path, "type": file_type, "name": path_obj.name})
-    metadata_block["files"] = files_payload
-    metadata["metadata"] = metadata_block
-    metadata["db_snapshot"] = {
-        "project_id": project.id,
-        "user_id": project.user_id,
-        "status": project.status.value,
-        "source_path": project.source_path,
-        "created_at": project.created_at.isoformat() if project.created_at else None,
-        "updated_at": project.updated_at.isoformat() if project.updated_at else None,
-    }
-    write_project_metadata(project.id, metadata)
+    meta = pm.load(project)
+    if file_type == "image":
+        pm.append_image(meta, path_obj.name)
+        register_uploaded_image_in_metadata(meta, project.id, path_obj)
+    else:
+        pm.set_input_file(meta, file_path)
+    pm.save(project, meta)
 
     return ProjectFileUploadResponse(
         project_id=project.id,
@@ -207,22 +151,6 @@ def upload_project_additional_file(
         file_path=file_path,
         file_type=file_type,
     )
-
-
-def _write_image_suggestions(project: Project, suggestions: list[dict]) -> None:
-    metadata = read_project_metadata(project.id) or _build_project_metadata(project)
-    metadata_block = metadata.get("metadata", {})
-    metadata_block["image_suggestions"] = suggestions
-    metadata["metadata"] = metadata_block
-    metadata["db_snapshot"] = {
-        "project_id": project.id,
-        "user_id": project.user_id,
-        "status": project.status.value,
-        "source_path": project.source_path,
-        "created_at": project.created_at.isoformat() if project.created_at else None,
-        "updated_at": project.updated_at.isoformat() if project.updated_at else None,
-    }
-    write_project_metadata(project.id, metadata)
 
 
 @router.post("/{project_id}/process", response_model=ProjectProcessResponse)
@@ -241,7 +169,7 @@ def process_project_document(
     db: Session = Depends(get_db),
 ):
     """
-    Связка: doc-service (extract) → ML → doc-service (apply + ГОСТ) → готовый файл на скачивание.
+    Связка doc-service: extract → apply_ml_changes → download PDF + DOCX.
     """
     project = db.get(Project, project_id)
     if not project:
@@ -252,21 +180,9 @@ def process_project_document(
     if not docx_path:
         project.status = ProjectStatus.ERROR
         db.commit()
-        metadata = read_project_metadata(project.id) or _build_project_metadata(project)
-        metadata_block = metadata.get("metadata", {})
-        errors = metadata_block.get("processing_errors", [])
-        errors.append("В проекте нет DOCX для обработки (нужен .docx в загрузке или в input/).")
-        metadata_block["processing_errors"] = errors
-        metadata["metadata"] = metadata_block
-        metadata["db_snapshot"] = {
-            "project_id": project.id,
-            "user_id": project.user_id,
-            "status": project.status.value,
-            "source_path": project.source_path,
-            "created_at": project.created_at.isoformat() if project.created_at else None,
-            "updated_at": project.updated_at.isoformat() if project.updated_at else None,
-        }
-        write_project_metadata(project.id, metadata)
+        meta = pm.load(project)
+        pm.add_error(meta, "В проекте нет DOCX для обработки (нужен .docx в загрузке или в input/).")
+        pm.save(project, meta)
         raise HTTPException(status_code=400, detail="В проекте нет DOCX для обработки.")
 
     payload = {
@@ -300,31 +216,17 @@ def process_project_document(
     input_path = copy_project_file_to_task_input(task.id, docx_path)
 
     if topic and topic.strip():
-        metadata = read_project_metadata(project.id) or _build_project_metadata(project)
-        mb = metadata.get("metadata", {})
-        mb["topic"] = topic.strip()
-        metadata["metadata"] = mb
-        write_project_metadata(project.id, metadata)
+        meta = pm.load(project)
+        meta["topic"] = topic.strip()
+        pm.save(project, meta)
 
     try:
         result = run_document_task_pipeline(db, task, project, input_path)
     except HTTPException as exc:
-        metadata = read_project_metadata(project.id) or _build_project_metadata(project)
-        metadata_block = metadata.get("metadata", {})
-        errors = metadata_block.get("processing_errors", [])
+        meta = pm.load(project)
         detail = exc.detail if isinstance(exc.detail, str) else str(exc.detail)
-        errors.append(detail)
-        metadata_block["processing_errors"] = errors
-        metadata["metadata"] = metadata_block
-        metadata["db_snapshot"] = {
-            "project_id": project.id,
-            "user_id": project.user_id,
-            "status": project.status.value,
-            "source_path": project.source_path,
-            "created_at": project.created_at.isoformat() if project.created_at else None,
-            "updated_at": project.updated_at.isoformat() if project.updated_at else None,
-        }
-        write_project_metadata(project.id, metadata)
+        pm.add_error(meta, detail)
+        pm.save(project, meta)
         raise
 
     db.refresh(task)
@@ -339,9 +241,6 @@ def process_project_document(
             status=project.status.value,
             report=report,
         )
-
-    suggestions = build_image_suggestions_for_project(project.id)
-    _write_image_suggestions(project, suggestions)
 
     db.refresh(project)
     return ProjectProcessResponse(
@@ -363,12 +262,10 @@ def get_image_suggestions(
         raise HTTPException(status_code=404, detail="Проект не найден.")
     _ensure_project_owner(project, user_id, "смотреть подсказки")
 
-    metadata = read_project_metadata(project.id)
-    metadata_block = metadata.get("metadata", {})
-    suggestions = metadata_block.get("image_suggestions")
-    if not suggestions:
-        suggestions = build_image_suggestions_for_project(project.id)
-        _write_image_suggestions(project, suggestions)
+    meta = pm.load(project)
+    suggestions = build_image_suggestions_from_metadata(project.id, meta)
+    meta["image_suggestions"] = suggestions
+    pm.save(project, meta)
 
     return ProjectSuggestionsResponse(
         project_id=project.id,
@@ -389,26 +286,16 @@ def apply_image_suggestions(
         raise HTTPException(status_code=404, detail="Проект не найден.")
     _ensure_project_owner(project, user_id, "применять подсказки")
 
-    metadata = read_project_metadata(project.id) or _build_project_metadata(project)
-    metadata_block = metadata.get("metadata", {})
-    suggestions = metadata_block.get("image_suggestions") or []
+    meta = pm.load(project)
+    suggestions = meta.get("image_suggestions") or []
     applied: list[str] = []
     id_set = set(body.suggestion_ids)
     for item in suggestions:
         if item.get("id") in id_set:
             item["applied"] = True
             applied.append(item["id"])
-    metadata_block["image_suggestions"] = suggestions
-    metadata["metadata"] = metadata_block
-    metadata["db_snapshot"] = {
-        "project_id": project.id,
-        "user_id": project.user_id,
-        "status": project.status.value,
-        "source_path": project.source_path,
-        "created_at": project.created_at.isoformat() if project.created_at else None,
-        "updated_at": project.updated_at.isoformat() if project.updated_at else None,
-    }
-    write_project_metadata(project.id, metadata)
+    meta["image_suggestions"] = suggestions
+    pm.save(project, meta)
 
     return ApplySuggestionsResponse(project_id=project.id, status=project.status.value, applied_ids=applied)
 
@@ -417,6 +304,11 @@ def apply_image_suggestions(
 def download_project_result(
     project_id: str,
     user_id: str = Query(..., description="Идентификатор пользователя"),
+    format: str = Query(
+        default='pdf',
+        alias='format',
+        description='Формат: pdf или docx',
+    ),
     db: Session = Depends(get_db),
 ):
     project = db.get(Project, project_id)
@@ -424,36 +316,9 @@ def download_project_result(
         raise HTTPException(status_code=404, detail="Проект не найден.")
     _ensure_project_owner(project, user_id, "скачать результат")
 
-    project_output_dir = Path(settings.projects_dir) / project_id / "output"
-    output_files = sorted(
-        [p for p in project_output_dir.glob("*.docx") if p.is_file()],
-        key=lambda p: p.stat().st_mtime,
-        reverse=True,
-    )
-    if output_files:
-        output_path = output_files[0]
-    else:
-        stmt = (
-            select(DocumentTask)
-            .where(DocumentTask.project_id == project_id)
-            .where(DocumentTask.status == TaskStatus.COMPLETED)
-            .where(DocumentTask.output_path.is_not(None))
-            .order_by(DocumentTask.created_at.desc())
-            .limit(1)
-        )
-        task = db.execute(stmt).scalars().first()
-        if not task or not task.output_path:
-            raise HTTPException(status_code=404, detail="Готовый файл проекта не найден.")
-        output_path = Path(task.output_path)
-        if not output_path.exists():
-            raise HTTPException(status_code=404, detail="Готовый файл проекта не найден.")
-
-    filename = f"{project_id}_result.docx"
-    return FileResponse(
-        str(output_path),
-        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        filename=filename,
-    )
+    fmt = format.lower().strip()
+    path, media_type, filename = resolve_project_output(db, project_id, fmt)
+    return FileResponse(str(path), media_type=media_type, filename=filename)
 
 
 @router.delete("/{project_id}", response_model=ProjectDeleteResponse)
@@ -501,62 +366,33 @@ def analyze_project(
         if not docx_path:
             raise HTTPException(status_code=400, detail="В проекте нет DOCX для анализа.")
 
-        extracted = orchestrator.extract_via_doc_service(docx_path, project.id)
-        document_text = orchestrator.text_from_extracted(extracted, str(docx_path))
-        image_paths = orchestrator.collect_image_paths(project, extracted, lambda pid: Path(settings.projects_dir) / pid)
+        meta = pm.load(project)
+        topic_value = orchestrator.topic_from_context(None, pm.topic_value(meta, project.source_filename))
 
-        metadata = read_project_metadata(project.id) or _build_project_metadata(project)
-        topic_value = orchestrator.topic_from_context(
-            None,
-            metadata.get("metadata", {}).get("topic") or project.source_filename,
-        )
-
-        project.status = ProjectStatus.ANALYZING
+        project.status = ProjectStatus.PROCESSING
         db.commit()
-        try:
-            analysis_result = orchestrator.run_ml_analysis(document_text, image_paths, topic_value)
-        except Exception:
-            project.status = ProjectStatus.ERROR
-            db.commit()
-            raise
+        raw = orchestrator.extract_via_doc_service(docx_path, project.id)
+        preview = orchestrator.normalize_extract_for_frontend(raw)
+        analysis_result = {
+            "project_id": project.id,
+            "topic": topic_value,
+            "preview": preview,
+            "note": "Превью текста через doc-service. Оформление — POST /projects/{id}/process.",
+        }
 
         project.status = ProjectStatus.READY
         db.commit()
-        metadata_block = metadata.get("metadata", {})
-        metadata_block["analysis"] = analysis_result
-        metadata_block["ml_analysis"] = analysis_result
-        metadata_block["ml_suggestions"] = analysis_result.get("content_suggestions") or []
-        metadata_block["processing_errors"] = []
-        metadata["metadata"] = metadata_block
-        metadata["db_snapshot"] = {
-            "project_id": project.id,
-            "user_id": project.user_id,
-            "status": project.status.value,
-            "source_path": project.source_path,
-            "created_at": project.created_at.isoformat() if project.created_at else None,
-            "updated_at": project.updated_at.isoformat() if project.updated_at else None,
-        }
-        write_project_metadata(project.id, metadata)
+        meta["analysis"] = analysis_result
+        meta["errors"] = []
+        pm.save(project, meta)
         return ProjectAnalysisResponse(project_id=project.id, status=project.status.value, analysis=analysis_result)
     except Exception as exc:
         project.status = ProjectStatus.ERROR
         db.commit()
-        metadata = read_project_metadata(project.id) or _build_project_metadata(project)
-        metadata_block = metadata.get("metadata", {})
-        errors = metadata_block.get("processing_errors", [])
-        errors.append(str(exc))
-        metadata_block["processing_errors"] = errors
-        metadata["metadata"] = metadata_block
-        metadata["db_snapshot"] = {
-            "project_id": project.id,
-            "user_id": project.user_id,
-            "status": project.status.value,
-            "source_path": project.source_path,
-            "created_at": project.created_at.isoformat() if project.created_at else None,
-            "updated_at": project.updated_at.isoformat() if project.updated_at else None,
-        }
-        write_project_metadata(project.id, metadata)
-        raise HTTPException(status_code=400, detail=f"Ошибка ML-анализа: {str(exc)}")
+        meta = pm.load(project)
+        pm.add_error(meta, str(exc))
+        pm.save(project, meta)
+        raise HTTPException(status_code=400, detail=f"Ошибка анализа: {str(exc)}")
 
 
 @router.get("/{project_id}/analysis", response_model=ProjectAnalysisResponse)
@@ -570,9 +406,8 @@ def get_project_analysis(
         raise HTTPException(status_code=404, detail="Проект не найден.")
     _ensure_project_owner(project, user_id, "смотреть анализ")
 
-    metadata = read_project_metadata(project.id)
-    metadata_block = metadata.get("metadata", {})
-    analysis = metadata_block.get("analysis")
+    meta = pm.load(project)
+    analysis = meta.get("analysis")
     if not analysis:
         raise HTTPException(status_code=404, detail="Результат анализа пока отсутствует.")
 

@@ -15,9 +15,19 @@ def save_input_file(task_id: str, upload_file: UploadFile) -> str:
     return str(path)
 
 
-def get_output_path(task_id: str) -> str:
+def get_task_output_paths(task_id: str) -> dict[str, str]:
+    """Пути итоговых файлов задачи: PDF и DOCX."""
     ensure_dirs()
-    return str(Path(settings.output_dir) / f'{task_id}.docx')
+    root = Path(settings.output_dir)
+    return {
+        'pdf': str(root / f'{task_id}.pdf'),
+        'docx': str(root / f'{task_id}.docx'),
+    }
+
+
+def get_output_path(task_id: str) -> str:
+    """Основной output (PDF) — для совместимости с output_path в БД."""
+    return get_task_output_paths(task_id)['pdf']
 
 
 def get_report_path(task_id: str) -> str:
@@ -88,11 +98,23 @@ def copy_project_file_to_task_input(task_id: str, source_path: str | Path) -> st
     return str(dest)
 
 
-def save_project_output_file(project_id: str, task_id: str, output_source_path: str) -> str:
+def save_project_output_files(
+    project_id: str,
+    task_id: str,
+    pdf_source_path: str,
+    docx_source_path: str,
+) -> dict[str, str]:
     dirs = ensure_project_dirs(project_id)
-    source = Path(output_source_path)
-    if not source.exists():
-        raise FileNotFoundError("Исходный output-файл задачи не найден.")
-    target = dirs["output"] / f"{task_id}.docx"
-    shutil.copy2(source, target)
-    return str(target)
+    out_dir = dirs['output']
+    pdf_src = Path(pdf_source_path)
+    docx_src = Path(docx_source_path)
+    if not pdf_src.is_file():
+        raise FileNotFoundError('PDF результата задачи не найден.')
+    if not docx_src.is_file():
+        raise FileNotFoundError('DOCX результата задачи не найден.')
+
+    pdf_target = out_dir / f'{task_id}.pdf'
+    docx_target = out_dir / f'{task_id}.docx'
+    shutil.copy2(pdf_src, pdf_target)
+    shutil.copy2(docx_src, docx_target)
+    return {'pdf': str(pdf_target), 'docx': str(docx_target)}

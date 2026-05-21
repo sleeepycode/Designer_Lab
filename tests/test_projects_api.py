@@ -78,10 +78,14 @@ def test_upload_project_file_creates_project_structure(tmp_path):
         assert metadata_path.exists()
 
         metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-        assert metadata["db_snapshot"]["project_id"] == project_id
-        assert metadata["db_snapshot"]["status"] == "uploaded"
-        assert metadata["metadata"]["source_filename"] == "source.docx"
-        assert metadata["metadata"]["files"][0]["name"] == "source.docx"
+        assert metadata["project_id"] == project_id
+        assert metadata["status"] == "uploaded"
+        assert metadata["source_filename"] == "source.docx"
+        assert metadata["input_file"]
+        assert metadata["images"] == []
+        assert metadata["output_file"] is None
+        assert metadata["ml_result"] is None
+        assert metadata["errors"] == []
 
 
 def test_upload_project_file_rejects_unsupported_extension(tmp_path):
@@ -129,10 +133,14 @@ def test_download_project_result_returns_latest_completed_output(tmp_path):
         task_resp = client.post("/tasks", data=task_data, files=task_files)
         assert task_resp.status_code == 200
 
-        download_resp = client.get(f"/projects/{project_id}/download?user_id=user-1")
-        assert download_resp.status_code == 200
+        download_pdf = client.get(f"/projects/{project_id}/download?user_id=user-1&format=pdf")
+        assert download_pdf.status_code == 200
+        assert download_pdf.headers["content-type"] == "application/pdf"
+
+        download_docx = client.get(f"/projects/{project_id}/download?user_id=user-1&format=docx")
+        assert download_docx.status_code == 200
         assert (
-            download_resp.headers["content-type"]
+            download_docx.headers["content-type"]
             == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
 
@@ -238,15 +246,16 @@ def test_project_analyze_and_get_analysis(tmp_path):
         assert analyze_resp.status_code == 200
         analyze_body = analyze_resp.json()
         assert analyze_body["status"] == "ready"
-        assert analyze_body["analysis"]["success"] is True
+        assert analyze_body["analysis"]["project_id"] == project_id
+        assert "preview" in analyze_body["analysis"]
 
         get_resp = client.get(f"/projects/{project_id}/analysis?user_id=user-1")
         assert get_resp.status_code == 200
-        assert get_resp.json()["analysis"]["success"] is True
+        assert get_resp.json()["analysis"]["project_id"] == project_id
 
         metadata_path = Path(settings.projects_dir) / project_id / "metadata.json"
         metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-        assert metadata["metadata"]["analysis"]["success"] is True
+        assert metadata["analysis"]["project_id"] == project_id
 
 
 def test_upload_additional_files_to_existing_project_separates_input_and_images(tmp_path):
@@ -276,9 +285,14 @@ def test_upload_additional_files_to_existing_project_separates_input_and_images(
 
         metadata_path = project_dir / "metadata.json"
         metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-        file_names = {item["name"] for item in metadata["metadata"]["files"]}
-        assert "base.docx" in file_names
-        assert "scan.jpg" in file_names
+        assert metadata["source_filename"] == "base.docx"
+        assert "scan.jpg" in metadata["images"]
+
+        suggestions = metadata.get("image_suggestions") or []
+        assert len(suggestions) == 1
+        assert suggestions[0]["ocr_text"] == "U=IR"
+        assert suggestions[0]["image_name"] == "scan.jpg"
+        assert "scan.jpg" in metadata.get("image_ml_results", {})
 
 
 def test_post_process_project_runs_same_pipeline_as_tasks(tmp_path):
@@ -311,8 +325,10 @@ def test_post_process_project_runs_same_pipeline_as_tasks(tmp_path):
         assert body["status"] == "ready"
         task_id = body["task_id"]
 
-        out_file = Path(settings.projects_dir) / project_id / "output" / f"{task_id}.docx"
-        assert out_file.exists()
+        out_pdf = Path(settings.projects_dir) / project_id / "output" / f"{task_id}.pdf"
+        out_docx = Path(settings.projects_dir) / project_id / "output" / f"{task_id}.docx"
+        assert out_pdf.exists()
+        assert out_docx.exists()
 
 
 def test_suggestions_get_and_apply(tmp_path):
@@ -363,5 +379,5 @@ def test_suggestions_get_and_apply(tmp_path):
         meta = json.loads(
             (Path(settings.projects_dir) / project_id / "metadata.json").read_text(encoding="utf-8")
         )
-        applied = [s for s in meta["metadata"]["image_suggestions"] if s.get("id") == sid]
+        applied = [s for s in meta["image_suggestions"] if s.get("id") == sid]
         assert applied and applied[0].get("applied") is True

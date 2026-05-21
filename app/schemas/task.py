@@ -28,6 +28,8 @@ class TaskStatusResponse(BaseModel):
     errors: list[str] = []
     warnings: list[str] = []
     has_output: bool = False
+    has_output_pdf: bool = False
+    has_output_docx: bool = False
     has_report: bool = False
 
 

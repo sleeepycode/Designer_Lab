@@ -1,7 +1,7 @@
 """
-Связка Frontend → Backend №1 → doc-service → ML → doc-service → Backend №1 → Frontend.
+Frontend → Backend №1 → doc-service → (ML внутри №2) → doc-service → Backend №1 → Frontend.
 
-Фронт ходит только сюда. ML и doc-service — по HTTP, фронт их не вызывает.
+Сохраняем оба формата: PDF и DOCX (две кнопки на фронте).
 """
 
 from __future__ import annotations
@@ -9,18 +9,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from docx import Document
-
-from app.models.project import Project
 from app.services import doc_service_client, ml_client
 
 
 def check_integrations() -> dict[str, Any]:
-    """Проверка доступности doc-service и ML (для /health и отладки)."""
-    return {
-        'doc_service': doc_service_client.ping(),
-        'ml': ml_client.ping(),
-    }
+    out: dict[str, Any] = {'doc_service': doc_service_client.ping()}
+    if ml_client.is_configured():
+        out['ml'] = ml_client.ping()
+    return out
 
 
 def extract_via_doc_service(docx_path: Path, project_id: str) -> dict:
@@ -28,9 +24,6 @@ def extract_via_doc_service(docx_path: Path, project_id: str) -> dict:
 
 
 def normalize_extract_for_frontend(raw: dict) -> dict:
-    """
-    Ответ doc-service → формат фронта (API_CONTRACT): paragraphs — строки.
-    """
     paragraphs: list[str] = []
     for item in raw.get('paragraphs') or []:
         if isinstance(item, dict):
@@ -50,64 +43,27 @@ def normalize_extract_for_frontend(raw: dict) -> dict:
         elif isinstance(item, str) and item:
             images.append(item)
 
-    return {
-        'paragraphs': paragraphs,
-        'tables': tables,
-        'images': images,
-    }
+    return {'paragraphs': paragraphs, 'tables': tables, 'images': images}
 
 
-def text_from_extracted(extracted: dict, fallback_docx_path: str | None = None) -> str:
-    paragraphs = extracted.get('paragraphs') or []
-    parts: list[str] = []
-    for item in paragraphs:
-        if isinstance(item, dict):
-            text = (item.get('text') or '').strip()
-        else:
-            text = str(item).strip()
-        if text:
-            parts.append(text)
-    document_text = '\n'.join(parts)
-    if document_text.strip() or not fallback_docx_path:
-        return document_text
-    return '\n'.join(
-        p.text.strip()
-        for p in Document(fallback_docx_path).paragraphs
-        if p.text and p.text.strip()
-    )
-
-
-def collect_image_paths(project: Project | None, extracted: dict, project_root_fn) -> list[str]:
-    paths: list[str] = []
-    for img in extracted.get('images') or []:
-        if isinstance(img, dict) and img.get('path'):
-            paths.append(str(img['path']))
-        elif isinstance(img, str):
-            paths.append(img)
-
-    if project:
-        images_dir = project_root_fn(project.id) / 'images'
-        if images_dir.is_dir():
-            for ext in ('*.png', '*.jpg', '*.jpeg'):
-                for p in sorted(images_dir.glob(ext)):
-                    resolved = str(p.resolve())
-                    if resolved not in paths:
-                        paths.append(resolved)
-    return paths
-
-
-def run_ml_analysis(document_text: str, image_paths: list[str], topic: str) -> dict:
-    return ml_client.analyze_document(document_text, image_paths, topic)
-
-
-def build_doc_service_result(
+def run_doc_service_pipeline(
+    docx_path: Path,
     project_id: str,
-    ml_response: dict,
     title_page: dict,
-    output_path: str | Path,
-) -> Path:
-    doc_service_client.apply_ml_changes(project_id, ml_response, title_page)
-    return doc_service_client.download_result(project_id, output_path)
+    topic: str,
+    output_pdf_path: str | Path,
+    output_docx_path: str | Path,
+) -> dict[str, Any]:
+    """
+    1) POST /documents/extract
+    2) POST /documents/apply_ml_changes
+    3) GET /documents/download-pdf + GET /documents/download (DOCX)
+    """
+    doc_service_client.extract_document(docx_path, project_id)
+    apply_result = doc_service_client.apply_ml_changes(project_id, title_page, topic)
+    doc_service_client.download_pdf(project_id, output_pdf_path)
+    doc_service_client.download_docx(project_id, output_docx_path)
+    return apply_result
 
 
 def title_page_from_form(payload: dict | None) -> dict:

@@ -7,28 +7,15 @@ from sqlalchemy.orm import Session
 from app.models.project import Project, ProjectStatus
 from app.models.task import DocumentTask, TaskStatus
 from app.services import orchestrator
+from app.services import project_metadata as pm
 from app.services.reporting import save_report
 from app.services.storage import (
-    get_output_path,
+    get_task_output_paths,
     get_report_path,
-    get_project_root,
-    read_project_metadata,
-    save_project_output_file,
-    write_project_metadata,
+    save_project_output_files,
 )
 from app.core.errors import raise_api_error
 from app.services.validator import validate_source_document
-
-
-def _sync_project_metadata_snapshot(project: Project) -> dict[str, Any]:
-    return {
-        'project_id': project.id,
-        'user_id': project.user_id,
-        'status': project.status.value,
-        'source_path': project.source_path,
-        'created_at': project.created_at.isoformat() if project.created_at else None,
-        'updated_at': project.updated_at.isoformat() if project.updated_at else None,
-    }
 
 
 def _update_project_status(db: Session, project: Project | None, status: ProjectStatus) -> None:
@@ -51,15 +38,16 @@ def run_document_task_pipeline(
         _update_project_status(db, project, ProjectStatus.ERROR)
         raise_api_error('empty_file', 'Входной файл пустой.')
 
-    output_path = get_output_path(task.id)
+    output_paths = get_task_output_paths(task.id)
+    output_pdf = output_paths['pdf']
+    output_docx = output_paths['docx']
     report_path = get_report_path(task.id)
     task.input_path = input_path
     doc_service_project_id = project.id if project else task.id
 
     metadata_topic: str | None = None
     if project:
-        meta = read_project_metadata(project.id)
-        metadata_topic = meta.get('metadata', {}).get('topic')
+        metadata_topic = pm.topic_value(pm.load(project))
 
     try:
         validation = validate_source_document(input_path)
@@ -90,29 +78,33 @@ def run_document_task_pipeline(
         task.warnings = validation['warnings']
         db.commit()
         _update_project_status(db, project, ProjectStatus.ERROR)
+        if project:
+            meta = pm.load(project)
+            for err in validation['errors']:
+                pm.add_error(meta, err)
+            pm.save(project, meta)
         return {'type': 'validation_failed', 'report': report}
 
     _update_project_status(db, project, ProjectStatus.PROCESSING)
 
     try:
-        extracted = orchestrator.extract_via_doc_service(Path(input_path), doc_service_project_id)
-        document_text = orchestrator.text_from_extracted(extracted, input_path)
-        image_paths = orchestrator.collect_image_paths(project, extracted, get_project_root)
         topic = orchestrator.topic_from_context(task.payload, metadata_topic)
+        title_page = orchestrator.title_page_from_form(task.payload)
 
         _update_project_status(db, project, ProjectStatus.ANALYZING)
         try:
-            ml_response = orchestrator.run_ml_analysis(document_text, image_paths, topic)
+            process_result = orchestrator.run_doc_service_pipeline(
+                Path(input_path),
+                doc_service_project_id,
+                title_page,
+                topic,
+                output_pdf,
+                output_docx,
+            )
         finally:
             _update_project_status(db, project, ProjectStatus.PROCESSING)
 
-        title_page = orchestrator.title_page_from_form(task.payload)
-        orchestrator.build_doc_service_result(
-            doc_service_project_id,
-            ml_response,
-            title_page,
-            output_path,
-        )
+        ml_response = process_result.get('ml_response') or process_result
 
         report = {
             'status': 'completed',
@@ -123,8 +115,15 @@ def run_document_task_pipeline(
             'pipeline': {
                 'doc_service_project_id': doc_service_project_id,
                 'topic': topic,
-                'steps': ['validate', 'doc_service.extract', 'ml.analyze', 'doc_service.apply_ml_changes', 'doc_service.download'],
+                'steps': [
+                    'validate',
+                    'doc_service.extract',
+                    'doc_service.apply_ml_changes',
+                    'doc_service.download_pdf',
+                    'doc_service.download_docx',
+                ],
             },
+            'outputs': {'pdf': output_pdf, 'docx': output_docx},
             'ml_response': ml_response,
         }
     except HTTPException:
@@ -136,21 +135,20 @@ def run_document_task_pipeline(
         _update_project_status(db, project, ProjectStatus.ERROR)
         if project:
             try:
-                meta = read_project_metadata(project.id)
-                mb = meta.get('metadata', {})
-                errs = mb.get('processing_errors', [])
-                errs.append(str(exc))
-                mb['processing_errors'] = errs
-                meta['metadata'] = mb
-                meta['db_snapshot'] = _sync_project_metadata_snapshot(project)
-                write_project_metadata(project.id, meta)
+                meta = pm.load(project)
+                pm.add_error(meta, str(exc))
+                pm.save(project, meta)
             except Exception:
                 pass
         raise HTTPException(status_code=400, detail=f'Ошибка обработки: {exc}')
 
     save_report(report_path, report)
     task.status = TaskStatus.COMPLETED
-    task.output_path = output_path
+    task.output_path = output_pdf
+    task.payload = {
+        **(task.payload or {}),
+        'output_paths': {'pdf': output_pdf, 'docx': output_docx},
+    }
     task.report_path = report_path
     task.errors = report['errors']
     task.warnings = report['warnings']
@@ -158,18 +156,15 @@ def run_document_task_pipeline(
 
     if project:
         try:
-            project_output_path = save_project_output_file(project.id, task.id, output_path)
-            metadata = read_project_metadata(project.id)
-            metadata_block = metadata.get('metadata', {})
-            files = metadata_block.get('files', [])
-            files.append({'path': project_output_path, 'type': 'output', 'name': f'{task.id}.docx'})
-            metadata_block['files'] = files
-            metadata_block['last_task_report_path'] = report_path
-            metadata_block['ml_result'] = ml_response
-            metadata_block['ml_analysis'] = ml_response
-            metadata['metadata'] = metadata_block
-            metadata['db_snapshot'] = _sync_project_metadata_snapshot(project)
-            write_project_metadata(project.id, metadata)
+            project_outputs = save_project_output_files(
+                project.id, task.id, output_pdf, output_docx
+            )
+            meta = pm.load(project)
+            pm.set_outputs(meta, docx_path=project_outputs['docx'], pdf_path=project_outputs['pdf'])
+            meta['ml_result'] = ml_response
+            meta['last_task_report_path'] = report_path
+            meta['errors'] = []
+            pm.save(project, meta)
         except Exception:
             pass
         _update_project_status(db, project, ProjectStatus.READY)
@@ -177,6 +172,7 @@ def run_document_task_pipeline(
     return {
         'type': 'success',
         'report': report,
-        'output_path': output_path,
+        'output_path': output_pdf,
+        'output_docx_path': output_docx,
         'report_path': report_path,
     }
