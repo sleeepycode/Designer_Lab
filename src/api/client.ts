@@ -1,4 +1,16 @@
+import { getAccessToken } from '@/api/authStorage';
+
 const DEFAULT_API_BASE_URL = 'http://127.0.0.1:8000';
+
+export type DownloadFormat = 'pdf' | 'docx';
+
+export type AuthResponse = {
+  user_id: string;
+  email: string;
+  display_name?: string | null;
+  access_token: string;
+  token_type?: string;
+};
 
 /**
  * База REST API без завершающего слэша.
@@ -14,14 +26,54 @@ export function getApiBase(): string {
 }
 
 async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const token = getAccessToken();
+  const headers = new Headers(init?.headers);
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
   try {
-    return await fetch(input, init);
+    return await fetch(input, { ...init, headers });
   } catch (e) {
     if (e instanceof TypeError) {
       throw new Error('Не удалось выполнить запрос. Попробуйте позже.');
     }
     throw e;
   }
+}
+
+export async function authLogin(email: string, password: string): Promise<AuthResponse> {
+  const res = await apiFetch(`${getApiBase()}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email.trim(), password }),
+  });
+  return parseJsonOrThrow(res) as Promise<AuthResponse>;
+}
+
+export async function authRegister(email: string, password: string): Promise<AuthResponse> {
+  const res = await apiFetch(`${getApiBase()}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email.trim(), password }),
+  });
+  return parseJsonOrThrow(res) as Promise<AuthResponse>;
+}
+
+export async function authMe(): Promise<AuthResponse> {
+  const res = await apiFetch(`${getApiBase()}/auth/me`);
+  const data = (await parseJsonOrThrow(res)) as {
+    user_id: string;
+    email: string;
+    display_name?: string | null;
+  };
+  const token = getAccessToken();
+  if (!token) throw new Error('Сессия не найдена');
+  return {
+    user_id: data.user_id,
+    email: data.email,
+    display_name: data.display_name,
+    access_token: token,
+  };
 }
 
 export type ExtractResponse = {
@@ -231,15 +283,16 @@ export async function fetchTaskReportJson(
 export async function downloadProjectBlob(
   projectId: string,
   userId: string,
+  format: DownloadFormat,
 ): Promise<{ blob: Blob; filename: string }> {
-  const q = new URLSearchParams({ user_id: userId });
+  const q = new URLSearchParams({ user_id: userId, format });
   const res = await apiFetch(`${getApiBase()}/projects/${projectId}/download?${q}`);
   if (!res.ok) {
     const t = await res.text();
     throw new Error(t || res.statusText);
   }
   const cd = res.headers.get('Content-Disposition');
-  let filename = `${projectId}_result.docx`;
+  let filename = `${projectId}_result.${format}`;
   const m = cd?.match(/filename="?([^";]+)"?/i);
   if (m) filename = m[1];
   const blob = await res.blob();

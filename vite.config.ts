@@ -12,6 +12,7 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/health': { target: 'http://127.0.0.1:8000', changeOrigin: true },
+      '/auth': { target: 'http://127.0.0.1:8000', changeOrigin: true },
       '/projects': { target: 'http://127.0.0.1:8000', changeOrigin: true },
       '/tasks': { target: 'http://127.0.0.1:8000', changeOrigin: true },
     },

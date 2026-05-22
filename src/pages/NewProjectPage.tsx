@@ -23,7 +23,7 @@ const STEPS = [
   { n: 3, title: 'Изображения', desc: 'Подсказки по вставке' },
   { n: 4, title: 'Оформление', desc: 'ГОСТ на сервере' },
   { n: 5, title: 'Проверка', desc: 'Отчёт и предпросмотр' },
-  { n: 6, title: 'Скачать', desc: 'Готовый файл' },
+  { n: 6, title: 'Скачать', desc: 'DOCX и PDF' },
 ];
 
 function isReportSuccessful(report: Record<string, unknown>): boolean {
@@ -93,6 +93,7 @@ export function NewProjectPage() {
   const [downloadName, setDownloadName] = useState('');
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [downloadBusy, setDownloadBusy] = useState<'docx' | 'pdf' | null>(null);
   const [err, setErr] = useState('');
 
   const [payload, setPayload] = useState<ProcessPayload>(() => ({
@@ -122,7 +123,7 @@ export function NewProjectPage() {
       return;
     }
     let cancelled = false;
-    void downloadProjectBlob(projectId, user.userId)
+    void downloadProjectBlob(projectId, user.userId, 'docx')
       .then(({ blob }) => {
         if (!cancelled) setPreviewBlob(blob);
       })
@@ -256,31 +257,46 @@ export function NewProjectPage() {
     }
   }
 
-  async function handleDownload() {
+  function triggerBlobDownload(blob: Blob, filename: string) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function handleDownloadDocx() {
     if (!user || !projectId) return;
     if (downloadUrl && downloadBlob) {
-      const a = document.createElement('a');
-      a.href = downloadUrl;
-      a.download = downloadName || 'document.docx';
-      a.click();
+      triggerBlobDownload(downloadBlob, downloadName || 'document.docx');
       return;
     }
-    setBusy(true);
+    setDownloadBusy('docx');
     setErr('');
     try {
-      const { blob, filename } = await downloadProjectBlob(projectId, user.userId);
+      const { blob, filename } = await downloadProjectBlob(projectId, user.userId, 'docx');
       setDownloadBlob(blob);
       setDownloadName(filename);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
+      triggerBlobDownload(blob, filename);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Файл ещё не готов');
+      setErr(e instanceof Error ? e.message : 'DOCX ещё не готов');
     } finally {
-      setBusy(false);
+      setDownloadBusy(null);
+    }
+  }
+
+  async function handleDownloadPdf() {
+    if (!user || !projectId) return;
+    setDownloadBusy('pdf');
+    setErr('');
+    try {
+      const { blob, filename } = await downloadProjectBlob(projectId, user.userId, 'pdf');
+      triggerBlobDownload(blob, filename);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'PDF ещё не готов');
+    } finally {
+      setDownloadBusy(null);
     }
   }
 
@@ -555,15 +571,26 @@ export function NewProjectPage() {
         )}
 
         {step === 6 && (
-          <div className="flex flex-col items-center gap-6 py-12">
-            <button
-              type="button"
-              className="btn-primary px-10 py-3 text-base"
-              disabled={busy}
-              onClick={() => void handleDownload()}
-            >
-              {busy ? 'Загрузка…' : 'Скачать документ'}
-            </button>
+          <div className="flex flex-col items-center gap-4 py-12">
+            <p className="text-sm text-zinc-600">Выберите формат готового документа.</p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <button
+                type="button"
+                className="btn-primary px-8 py-3 text-base"
+                disabled={downloadBusy !== null}
+                onClick={() => void handleDownloadDocx()}
+              >
+                {downloadBusy === 'docx' ? 'Загрузка…' : 'Скачать DOCX'}
+              </button>
+              <button
+                type="button"
+                className="btn-secondary px-8 py-3 text-base"
+                disabled={downloadBusy !== null}
+                onClick={() => void handleDownloadPdf()}
+              >
+                {downloadBusy === 'pdf' ? 'Загрузка…' : 'Скачать PDF'}
+              </button>
+            </div>
           </div>
         )}
       </div>

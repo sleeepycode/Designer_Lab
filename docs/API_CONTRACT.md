@@ -153,9 +153,13 @@ JSON-отчёт для шага 5. Структура свободная; UI п�
 
 ---
 
-### `GET /projects/{project_id}/download?user_id=...`
+### `GET /projects/{project_id}/download?user_id=...&format=pdf|docx`
 
-Бинарный DOCX. Заголовок `Content-Disposition` с `filename` желателен.
+Бинарный файл. Параметр **`format`** обязателен для UI: `docx` или `pdf` (без параметра backend по умолчанию отдаёт PDF).
+
+### `POST /auth/register`, `POST /auth/login`, `GET /auth/me`
+
+Регистрация и вход. Ответ: `user_id`, `email`, `access_token`. Дальнейшие запросы к проектам — с тем же `user_id` в form/query; опционально заголовок `Authorization: Bearer <token>` для `/auth/me`.
 
 ---
 
