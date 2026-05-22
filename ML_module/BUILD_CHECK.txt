@@ -1,3 +1,0 @@
-Syntax check: OK
-Runtime with Ollama requires Ollama installed and model pulled.
-Runtime with images requires EasyOCR dependencies installed.

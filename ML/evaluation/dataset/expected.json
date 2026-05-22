@@ -1,0 +1,19 @@
+
+{
+  "reports": [
+    {
+      "file": "good_report.txt",
+      "expected_sections": [
+        "introduction",
+        "practice",
+        "conclusion"
+      ]
+    }
+  ],
+  "images": [
+    {
+      "file": "graph.png",
+      "expected_type": "graph"
+    }
+  ]
+}

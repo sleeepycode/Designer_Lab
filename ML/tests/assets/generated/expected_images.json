@@ -1,0 +1,26 @@
+{
+  "graph_temperature.png": {
+    "type": "graph",
+    "numbering_type": "figure",
+    "expected_caption_contains": "График",
+    "expected_placement_keywords": ["график", "температур"]
+  },
+  "table_measurements.png": {
+    "type": "table",
+    "numbering_type": "table",
+    "expected_caption_contains": "Таблица",
+    "expected_placement_keywords": ["таблиц", "измерен"]
+  },
+  "scheme_algorithm.png": {
+    "type": "scheme",
+    "numbering_type": "figure",
+    "expected_caption_contains": "Схема",
+    "expected_placement_keywords": ["схем", "алгоритм"]
+  },
+  "formula_average.png": {
+    "type": "formula",
+    "numbering_type": "figure",
+    "expected_caption_contains": "Формула",
+    "expected_placement_keywords": ["расч", "средн"]
+  }
+}
