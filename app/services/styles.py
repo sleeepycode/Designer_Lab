@@ -1,7 +1,3 @@
-"""
-Стили для DOCX документов по ГОСТ (с использованием встроенных стилей Word)
-"""
-
 import logging
 from docx import Document
 from docx.shared import Pt, Cm, RGBColor
