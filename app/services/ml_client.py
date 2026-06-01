@@ -1,6 +1,9 @@
+"""
+Клиент для взаимодействия с ML сервисом
+"""
+
 import logging
 import requests
-import base64
 import json
 from pathlib import Path
 from typing import Dict, Any, List, Optional
@@ -14,11 +17,12 @@ class MLClient:
     Клиент для отправки данных в ML сервис
     """
     
-    def __init__(self, base_url: str = None):
+    def __init__(self, base_url: str = None, service_url: str = None):
         self.base_url = base_url or settings.ml_service_url
+        self.service_url = service_url or settings.service_url  # URL вашего сервиса
         self.timeout = settings.ml_timeout
-        self.max_image_size_mb = 10  # Максимальный размер изображения для base64
         logger.info(f"ML Client initialized with URL: {self.base_url}")
+        logger.info(f"Service public URL: {self.service_url}")
     
     def extract_document_text(self, structure: Dict[str, Any]) -> str:
         """
@@ -32,49 +36,55 @@ class MLClient:
                 texts.append(text.strip())
         return '\n'.join(texts)
     
-    def encode_image_to_base64(self, image_path: str) -> Optional[str]:
+    def get_image_url(self, image_path: str, project_id: str) -> str:
         """
-        Конвертирует изображение в base64 строку
+        Формирует публичный URL для изображения
+        
+        Пример: http://localhost:8001/storage/projects/123/media/image1.png
         """
+        # Преобразуем путь к относительному от storage
+        path = Path(image_path)
+        
+        # Путь должен быть относительно storage
+        # Например: storage/projects/123/media/image1.png
         try:
-            path = Path(image_path)
-            if not path.exists():
-                logger.warning(f"Image not found: {image_path}")
-                return None
-            
-            # Проверяем размер
-            size_mb = path.stat().st_size / (1024 * 1024)
-            if size_mb > self.max_image_size_mb:
-                logger.warning(f"Image too large ({size_mb:.2f} MB), skipping: {image_path}")
-                return None
-            
-            with open(path, 'rb') as f:
-                return base64.b64encode(f.read()).decode('utf-8')
-        except Exception as e:
-            logger.error(f"Failed to encode image {image_path}: {str(e)}")
-            return None
+            # Ищем часть пути после 'storage'
+            storage_index = str(path).find('storage')
+            if storage_index != -1:
+                relative_path = str(path)[storage_index:]
+            else:
+                relative_path = str(path)
+        except Exception:
+            relative_path = str(path)
+        
+        # Формируем полный URL
+        url = f"{self.service_url}/{relative_path.replace('\\', '/')}"
+        logger.debug(f"Generated image URL: {url}")
+        return url
     
-    def extract_images_with_base64(self, structure: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def extract_images_with_urls(self, structure: Dict[str, Any], project_id: str) -> List[Dict[str, Any]]:
         """
-        Извлекает изображения из структуры и конвертирует в base64
+        Извлекает изображения и формирует публичные URL
         """
         images = structure.get('images', [])
         result = []
         
         for img in images:
-            img_path = img.get('path', '') if isinstance(img, dict) else str(img)
-            if img_path:
-                img_base64 = self.encode_image_to_base64(img_path)
-                if img_base64:
-                    result.append({
-                        'id': img.get('id', ''),
-                        'filename': Path(img_path).name,
-                        'data': img_base64,
-                        'position': img.get('position', 0),
-                        'insert_before_paragraph': img.get('insert_before_paragraph')
-                    })
+            img_path = img.get('path', '')
+            if img_path and Path(img_path).exists():
+                image_url = self.get_image_url(img_path, project_id)
+                result.append({
+                    'id': img.get('id', ''),
+                    'filename': Path(img_path).name,
+                    'url': image_url,           # публичный URL
+                    'path': img_path,           # <-- ДОБАВЛЯЕМ локальный путь (для совместимости)
+                    'position': img.get('position', 0),
+                    'insert_before_paragraph': img.get('insert_before_paragraph')
+                })
+            elif img_path:
+                logger.warning(f"Image not found: {img_path}")
         
-        logger.info(f"Encoded {len(result)} images to base64")
+        logger.info(f"Generated URLs for {len(result)} images")
         return result
     
     def analyze_document(
@@ -85,47 +95,35 @@ class MLClient:
     ) -> Dict[str, Any]:
         """
         Отправляет документ в ML сервис для анализа
-        
-        Args:
-            project_id: ID проекта
-            structure: структура из extract_response.json
-            topic: тема работы (из формы, lab_title)
-        
-        Returns:
-            ml_response: ответ от ML сервиса
         """
+        from app.services.docx_core import ensure_project_dir, save_json
+        
         # Подготавливаем данные
         document_text = self.extract_document_text(structure)
-        images_base64 = self.extract_images_with_base64(structure)
+        images_urls = self.extract_images_with_urls(structure, project_id)
         
         # Формируем payload
         payload = {
             "project_id": project_id,
             "document_text": document_text,
-            "images": images_base64,  # передаём base64
+            "images": images_urls,
             "topic": topic or ""
         }
+        
+        # Сохраняем payload в файл для отладки
+        project_dir = ensure_project_dir(project_id)
+        payload_path = project_dir / 'ml_request_payload.json'
+        save_json(payload_path, payload)
+        logger.info(f"ML request payload saved to: {payload_path}")
         
         # Логируем
         logger.info(f"Sending request to ML service: {self.base_url}/analyze")
         logger.debug(f"Project ID: {project_id}")
         logger.debug(f"Document text length: {len(document_text)} chars")
-        logger.debug(f"Images count: {len(images_base64)}")
+        logger.debug(f"Images count: {len(images_urls)}")
+        for img in images_urls:
+            logger.debug(f"  Image: {img['filename']} -> {img.get('url', img.get('path'))}")
         logger.debug(f"Topic: {topic}")
-        
-        # Сохраняем payload для отладки
-        if settings.debug:
-            debug_dir = Path("storage/debug")
-            debug_dir.mkdir(parents=True, exist_ok=True)
-            with open(debug_dir / f"{project_id}_ml_payload.json", "w", encoding='utf-8') as f:
-                # Не сохраняем огромные base64 в лог
-                debug_payload = {
-                    "project_id": project_id,
-                    "document_text": document_text[:500] + "...",
-                    "images_count": len(images_base64),
-                    "topic": topic
-                }
-                json.dump(debug_payload, f, ensure_ascii=False, indent=2)
         
         try:
             response = requests.post(
@@ -137,21 +135,24 @@ class MLClient:
             response.raise_for_status()
             
             ml_response = response.json()
-            logger.info(f"ML service responded successfully")
-            logger.debug(f"ML response keys: {list(ml_response.keys())}")
+            
+            # Сохраняем ответ ML
+            response_path = project_dir / 'ml_response.json'
+            save_json(response_path, ml_response)
+            logger.info(f"ML response saved to: {response_path}")
+            
             return ml_response
             
-        except requests.exceptions.Timeout:
-            logger.error(f"ML service timeout after {self.timeout}s")
-            return self._get_error_response("Timeout", "ML service did not respond in time")
-        except requests.exceptions.ConnectionError:
-            logger.error(f"Failed to connect to ML service: {self.base_url}")
-            return self._get_error_response("ConnectionError", f"Cannot connect to {self.base_url}")
-        except requests.exceptions.HTTPError as e:
-            logger.error(f"HTTP error: {e.response.status_code} - {e.response.text}")
-            return self._get_error_response("HTTPError", f"Status {e.response.status_code}")
         except Exception as e:
             logger.error(f"ML service error: {str(e)}")
+            
+            # Сохраняем ошибку
+            error_path = project_dir / 'ml_error.json'
+            save_json(error_path, {
+                'error': str(e),
+                'payload': payload
+            })
+            
             return self._get_error_response("UnknownError", str(e))
     
     def _get_error_response(self, error_code: str, error_message: str) -> Dict[str, Any]:

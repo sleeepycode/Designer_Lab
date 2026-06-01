@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 
 from app.api.document_api import router as document_router
 from app.core.config import settings, ensure_dirs
@@ -46,6 +48,13 @@ def create_app() -> FastAPI:
     @app.get('/')
     def healthcheck():
         return {'status': 'ok'}
+    
+
+    storage_path = Path("storage")
+    if storage_path.exists():
+        app.mount("/storage", StaticFiles(directory=str(storage_path)), name="storage")
+  
+    app.include_router(document_router)
 
     return app
 
