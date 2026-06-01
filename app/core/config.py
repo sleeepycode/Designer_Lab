@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     # Main Backend callback
     main_backend_url: str = 'http://localhost:8000'
 
+    ml_service_url: str = 'http://127.0.0.1:5000'  # URL ML сервиса
+    ml_timeout: int = 60  # Таймаут в секундах
+
     storage_dir: str = 'storage'
     input_dir: str = 'storage/inputs'
     output_dir: str = 'storage/outputs'
