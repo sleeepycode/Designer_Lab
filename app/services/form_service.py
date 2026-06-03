@@ -1,7 +1,3 @@
-"""
-Сервис для работы с формой (form.json)
-"""
-
 import json
 from pathlib import Path
 from typing import Dict, Any

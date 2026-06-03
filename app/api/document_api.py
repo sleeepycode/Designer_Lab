@@ -34,13 +34,10 @@ async def extract(file: UploadFile = File(...), project_id: str | None = Form(No
     media_dir = project_dir / 'media'
     media_dir.mkdir(parents=True, exist_ok=True)
 
-    # Извлекаем содержимое DOCX
     result = extract_docx(str(in_path), str(media_dir), project_id=project_id)
     
-    # Сохраняем результат
     save_json(project_dir / 'extract_response.json', result)
     
-    # Возвращаем project_id и результат
     return JSONResponse(content={
         'project_id': project_id,
         'paragraphs': result.get('paragraphs', []),
@@ -76,12 +73,10 @@ async def apply_ml_changes_endpoint(
     except json.JSONDecodeError as e:
         raise HTTPException(status_code=400, detail=f'Invalid JSON: {str(e)}')
     
-    # Извлекаем параметры
     project_id = body.get('project_id')
     ml_response = body.get('ml_response')
     title_page_data = body.get('title_page')
     
-    # Валидация
     if not project_id:
         raise HTTPException(status_code=400, detail='project_id is required')
     if not ml_response:
@@ -89,7 +84,6 @@ async def apply_ml_changes_endpoint(
     if not title_page_data:
         raise HTTPException(status_code=400, detail='title_page is required')
     
-    # Вызываем основную логику
     result = assemble_full_document(
         project_id=project_id,
         ml_response=ml_response,
@@ -97,14 +91,12 @@ async def apply_ml_changes_endpoint(
         output_filename=f'{project_id}_final.docx'
     )
     
-    # Проверяем результат
     if result.get('status') != 'completed':
         raise HTTPException(
             status_code=500, 
             detail=result.get('error', 'Assembly failed')
         )
     
-    # Возвращаем готовый файл
     return FileResponse(
         path=result['output_path'],
         filename=f'{project_id}_result.docx',
@@ -126,14 +118,12 @@ async def download_result(
     
     project_dir = ensure_project_dir(project_id)
     
-    # Возможные имена файлов (в порядке приоритета)
     possible_filenames = [
         f'{project_id}_final.docx',
         f'{project_id}_result.docx',
         f'{project_id}.docx'
     ]
     
-    # Ищем первый существующий файл
     output_path = None
     for filename in possible_filenames:
         candidate = project_dir / filename
@@ -160,7 +150,6 @@ async def get_project_info(
     """
     Получить информацию о проекте: какие файлы существуют
     """
-    
     project_dir = ensure_project_dir(project_id)
     
     files = []
@@ -244,7 +233,7 @@ async def download_pdf(project_id: str,):
 @router.post('/extract-and-analyze')
 async def extract_and_analyze(
     file: UploadFile = File(...),
-    form_data: str = Form(...)  # JSON строка с данными формы
+    form_data: str = Form(...)
 ):
     """
     Полный пайплайн:
@@ -255,20 +244,17 @@ async def extract_and_analyze(
     """
     import json
     
-    # Парсим данные формы
     try:
         form_data_dict = json.loads(form_data)
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail='Invalid form_data JSON')
     
-    # 1. Извлекаем DOCX
     if not file.filename.lower().endswith('.docx'):
         raise HTTPException(status_code=400, detail='Only .docx allowed')
     
     project_id = uuid4().hex
     project_dir = ensure_project_dir(project_id)
     
-    # Сохраняем файл
     in_path = project_dir / f'{project_id}.docx'
     with in_path.open('wb') as f:
         shutil.copyfileobj(file.file, f)
@@ -276,18 +262,14 @@ async def extract_and_analyze(
     media_dir = project_dir / 'media'
     media_dir.mkdir(parents=True, exist_ok=True)
     
-    # Извлекаем структуру
     result = extract_docx(str(in_path), str(media_dir), project_id=project_id)
     save_json(project_dir / 'extract_response.json', result)
     
-    # 2. Сохраняем данные формы
     save_form_data(project_id, form_data_dict)
     
-    # 3. Отправляем в ML
     topic = form_data_dict.get('lab_title', '')
     ml_response = analyze_document_with_ml(project_id, result, topic)
     
-    # Сохраняем ответ ML
     save_json(project_dir / 'ml_response.json', ml_response)
     
     return {
@@ -307,7 +289,6 @@ async def apply_ml_changes_from_storage(
     
     project_dir = ensure_project_dir(project_id)
     
-    # Загружаем ml_response
     ml_response_path = project_dir / 'ml_response.json'
     if not ml_response_path.exists():
         raise HTTPException(status_code=404, detail='ml_response.json not found')
@@ -315,7 +296,6 @@ async def apply_ml_changes_from_storage(
     with open(ml_response_path, 'r', encoding='utf-8') as f:
         ml_response = json.load(f)
     
-    # Загружаем данные формы
     title_page_data = get_form_data(project_id)
     if not title_page_data:
         raise HTTPException(status_code=404, detail='form.json not found')
@@ -335,3 +315,17 @@ async def apply_ml_changes_from_storage(
         filename=f'{project_id}_result.docx',
         media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     )
+
+@router.get('/debug-ml-payload/{project_id}')
+async def debug_ml_payload(project_id: str):
+    """
+    Посмотреть payload, который Doc Service отправил в ML.
+    """
+    project_dir = ensure_project_dir(project_id)
+    payload_path = project_dir / 'ml_request_payload.json'
+
+    if not payload_path.exists():
+        raise HTTPException(status_code=404, detail='ml_request_payload.json not found')
+
+    with open(payload_path, 'r', encoding='utf-8') as f:
+        return json.load(f)

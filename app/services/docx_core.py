@@ -83,7 +83,6 @@ def extract_docx(docx_path: str, out_media_dir: str, project_id: str | None = No
             has_image = paragraph_contains_drawing(item)
 
             if has_image and image_index < len(image_files):
-                # Изображение внутри параграфа
                 image_meta = {
                     'id': _make_id('image', image_index),
                     'path': image_files[image_index],
@@ -92,7 +91,7 @@ def extract_docx(docx_path: str, out_media_dir: str, project_id: str | None = No
                     'caption': None,
                     'position': image_index,
                     'context_text': text if text else None,
-                    'insert_before_paragraph': paragraph_count  # <-- привязка
+                    'insert_before_paragraph': paragraph_count
                 }
                 images.append(image_meta)
                 content_blocks.append({
@@ -135,7 +134,6 @@ def extract_docx(docx_path: str, out_media_dir: str, project_id: str | None = No
             })
             table_count += 1
 
-    # Добавляем оставшиеся изображения (если есть)
     while image_index < len(image_files):
         image_meta = {
             'id': _make_id('image', image_index),
@@ -341,7 +339,6 @@ def assemble_structure(
             elif isinstance(section_data, dict):
                 _add_paragraph_or_heading(doc, _get_paragraph_text(section_data))
 
-        # Добавляем дополнительные содержимое, если есть
         paragraphs = structure.get('paragraphs', []) or []
         images = structure.get('images', []) or []
         tables = structure.get('tables', []) or []

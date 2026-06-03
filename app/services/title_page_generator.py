@@ -5,7 +5,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
 from docx.shared import Pt
 
 from app.core.config import settings
-from app.services.extractor import iter_block_items  # исправлен импорт
+from app.services.extractor import iter_block_items
 
 
 TITLE_KEYWORDS = [
@@ -59,17 +59,16 @@ def generate_title_page(
     department: str,
     discipline: str,
     lab_number: str,
-    lab_title: str,         # <-- было topic
-    student_group: str,     # <-- было group
-    student_name: str,      # <-- было full_name
-    reviewer_name: str,     # <-- было teacher
+    lab_title: str,
+    student_group: str,
+    student_name: str,
+    reviewer_name: str,
 ) -> None:
     """
     Генерирует титульный лист по каноничному формату
     """
     doc = Document(input_path)
 
-    # Удалить существующий титульный лист, если есть
     remove_existing_title_page(doc)
 
     first_paragraph = doc.paragraphs[0] if doc.paragraphs else doc.add_paragraph()

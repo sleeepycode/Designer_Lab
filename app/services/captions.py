@@ -1,11 +1,9 @@
 import re
-
 from app.schemas.blocks import ParagraphBlock, TableBlock, ImageBlock
 
 
 FIGURE_RE = re.compile(r"^\s*рисунок\s+\d+", re.IGNORECASE)
 TABLE_RE = re.compile(r"^\s*таблица\s+\d+", re.IGNORECASE)
-
 
 def is_figure_caption(text: str) -> bool:
     return bool(FIGURE_RE.match(text.strip()))

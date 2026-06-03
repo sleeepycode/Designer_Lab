@@ -23,7 +23,6 @@ def set_run_font(run, font_name=None, size_pt=None, bold=False, italic=False, co
     if color_rgb:
         run.font.color.rgb = color_rgb
     
-    # Для поддержки кириллицы
     run._element.rPr.rFonts.set(qn('w:eastAsia'), font_name)
 
 

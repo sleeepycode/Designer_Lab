@@ -6,14 +6,13 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file='.env', extra='ignore')
     app_name: str = 'Document Processing Service'
     debug: bool = True
-    port: int = 8001
+    port: int = 8000
 
 
-    # Main Backend callback
-    service_url: str = 'http://localhost:8000'
+    service_url: str = 'http://127.0.0.1:8000'
 
-    ml_service_url: str = 'http://127.0.0.1:8001'  # URL ML сервиса
-    ml_timeout: int = 60  # Таймаут в секундах
+    ml_service_url: str = 'http://127.0.0.1:8001'
+    ml_timeout: int = 900
 
     storage_dir: str = 'storage'
     input_dir: str = 'storage/inputs'
@@ -27,7 +26,6 @@ class Settings(BaseSettings):
     city: str = 'Москва'
     year: int = 2026
 
-    # Жестко зафиксированные параметры оформления
     font_name: str = 'Times New Roman'
     font_size_pt: float = 14.0
     line_spacing: float = 1.5
