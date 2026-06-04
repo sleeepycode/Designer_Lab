@@ -169,12 +169,18 @@ def process_project_document(
     db: Session = Depends(get_db),
 ):
     """
-    Связка doc-service: extract → apply_ml_changes → download PDF + DOCX.
+    Связка doc-service: extract → ML → apply_ml_changes → download DOCX.
     """
     project = db.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Проект не найден.")
     _ensure_project_owner(project, user_id, "запускать обработку")
+
+    if project.status in (ProjectStatus.PROCESSING, ProjectStatus.ANALYZING):
+        raise HTTPException(
+            status_code=409,
+            detail="Обработка уже выполняется. Подождите завершения и не нажимайте кнопку повторно.",
+        )
 
     docx_path = resolve_primary_project_docx(project)
     if not docx_path:
@@ -305,9 +311,9 @@ def download_project_result(
     project_id: str,
     user_id: str = Query(..., description="Идентификатор пользователя"),
     format: str = Query(
-        default='pdf',
+        default='docx',
         alias='format',
-        description='Формат: pdf или docx',
+        description='Только docx',
     ),
     db: Session = Depends(get_db),
 ):

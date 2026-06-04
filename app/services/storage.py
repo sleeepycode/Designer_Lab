@@ -16,18 +16,16 @@ def save_input_file(task_id: str, upload_file: UploadFile) -> str:
 
 
 def get_task_output_paths(task_id: str) -> dict[str, str]:
-    """Пути итоговых файлов задачи: PDF и DOCX."""
+    """Путь итогового DOCX задачи."""
     ensure_dirs()
     root = Path(settings.output_dir)
-    return {
-        'pdf': str(root / f'{task_id}.pdf'),
-        'docx': str(root / f'{task_id}.docx'),
-    }
+    docx = str(root / f'{task_id}.docx')
+    return {'docx': docx}
 
 
 def get_output_path(task_id: str) -> str:
-    """Основной output (PDF) — для совместимости с output_path в БД."""
-    return get_task_output_paths(task_id)['pdf']
+    """Основной output — DOCX (поле output_path в БД)."""
+    return get_task_output_paths(task_id)['docx']
 
 
 def get_report_path(task_id: str) -> str:
@@ -37,6 +35,47 @@ def get_report_path(task_id: str) -> str:
 
 ALLOWED_PROJECT_INPUT_EXTENSIONS = {".docx"}
 ALLOWED_PROJECT_IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg"}
+
+
+def storage_relative_path(path: str | Path) -> str:
+    """Путь от корня storage/ в POSIX (контракт doc-service / ML)."""
+    raw = str(path).replace('\\', '/')
+    marker = 'storage/'
+    index = raw.lower().find(marker)
+    if index != -1:
+        return raw[index:]
+    return raw.lstrip('/')
+
+
+def project_file_url(path: str | Path) -> str:
+    """HTTP URL файла под /storage для ML и doc-service."""
+    return f'{settings.backend_public_url.rstrip("/")}/{storage_relative_path(path)}'
+
+
+def project_image_entry(project_id: str, path: Path, index: int) -> dict:
+    """Один элемент uploaded_images / images[] по контракту интеграции."""
+    return {
+        'image_id': f'user_image_{index}',
+        'path': project_file_url(path),
+        'local_path': storage_relative_path(path),
+        'source': 'user_uploaded_image',
+        'filename': path.name,
+        'position': index - 1,
+    }
+
+
+def list_project_uploaded_images(project_id: str) -> list[dict]:
+    """Картинки, загруженные пользователем в storage/projects/{id}/images/."""
+    dirs = ensure_project_dirs(project_id)
+    images_dir = dirs['images']
+    result: list[dict] = []
+    for index, path in enumerate(sorted(images_dir.glob('*')), start=1):
+        if not path.is_file():
+            continue
+        if path.suffix.lower() not in ALLOWED_PROJECT_IMAGE_EXTENSIONS:
+            continue
+        result.append(project_image_entry(project_id, path, index))
+    return result
 
 
 def get_project_root(project_id: str) -> Path:
@@ -101,20 +140,14 @@ def copy_project_file_to_task_input(task_id: str, source_path: str | Path) -> st
 def save_project_output_files(
     project_id: str,
     task_id: str,
-    pdf_source_path: str,
     docx_source_path: str,
 ) -> dict[str, str]:
     dirs = ensure_project_dirs(project_id)
     out_dir = dirs['output']
-    pdf_src = Path(pdf_source_path)
     docx_src = Path(docx_source_path)
-    if not pdf_src.is_file():
-        raise FileNotFoundError('PDF результата задачи не найден.')
     if not docx_src.is_file():
         raise FileNotFoundError('DOCX результата задачи не найден.')
 
-    pdf_target = out_dir / f'{task_id}.pdf'
     docx_target = out_dir / f'{task_id}.docx'
-    shutil.copy2(pdf_src, pdf_target)
     shutil.copy2(docx_src, docx_target)
-    return {'pdf': str(pdf_target), 'docx': str(docx_target)}
+    return {'docx': str(docx_target)}

@@ -12,6 +12,7 @@ from app.services.reporting import save_report
 from app.services.storage import (
     get_task_output_paths,
     get_report_path,
+    list_project_uploaded_images,
     save_project_output_files,
 )
 from app.core.errors import raise_api_error
@@ -38,9 +39,7 @@ def run_document_task_pipeline(
         _update_project_status(db, project, ProjectStatus.ERROR)
         raise_api_error('empty_file', 'Входной файл пустой.')
 
-    output_paths = get_task_output_paths(task.id)
-    output_pdf = output_paths['pdf']
-    output_docx = output_paths['docx']
+    output_docx = get_task_output_paths(task.id)['docx']
     report_path = get_report_path(task.id)
     task.input_path = input_path
     doc_service_project_id = project.id if project else task.id
@@ -91,6 +90,10 @@ def run_document_task_pipeline(
         topic = orchestrator.topic_from_context(task.payload, metadata_topic)
         title_page = orchestrator.title_page_from_form(task.payload)
 
+        uploaded_images: list[dict] = []
+        if project:
+            uploaded_images = list_project_uploaded_images(project.id)
+
         _update_project_status(db, project, ProjectStatus.ANALYZING)
         try:
             process_result = orchestrator.run_doc_service_pipeline(
@@ -98,14 +101,16 @@ def run_document_task_pipeline(
                 doc_service_project_id,
                 title_page,
                 topic,
-                output_pdf,
                 output_docx,
+                uploaded_images=uploaded_images,
             )
         finally:
             _update_project_status(db, project, ProjectStatus.PROCESSING)
 
-        ml_response = process_result.get('ml_response') or process_result
-
+        apply_result = process_result.get('apply_result') or process_result
+        ml_response = process_result.get('ml_response') or (
+            apply_result.get('ml_response') if isinstance(apply_result, dict) else apply_result
+        )
         report = {
             'status': 'completed',
             'errors': [],
@@ -115,16 +120,20 @@ def run_document_task_pipeline(
             'pipeline': {
                 'doc_service_project_id': doc_service_project_id,
                 'topic': topic,
+                'uploaded_images_count': len(uploaded_images),
+                'uploaded_images': uploaded_images,
                 'steps': [
                     'validate',
                     'doc_service.extract',
+                    'ml.analyze',
                     'doc_service.apply_ml_changes',
-                    'doc_service.download_pdf',
                     'doc_service.download_docx',
                 ],
             },
-            'outputs': {'pdf': output_pdf, 'docx': output_docx},
+            'outputs': {'docx': output_docx},
             'ml_response': ml_response,
+            'extract': process_result.get('extract'),
+            'apply_result': apply_result,
         }
     except HTTPException:
         raise
@@ -144,10 +153,10 @@ def run_document_task_pipeline(
 
     save_report(report_path, report)
     task.status = TaskStatus.COMPLETED
-    task.output_path = output_pdf
+    task.output_path = output_docx
     task.payload = {
         **(task.payload or {}),
-        'output_paths': {'pdf': output_pdf, 'docx': output_docx},
+        'output_paths': {'docx': output_docx},
     }
     task.report_path = report_path
     task.errors = report['errors']
@@ -156,12 +165,11 @@ def run_document_task_pipeline(
 
     if project:
         try:
-            project_outputs = save_project_output_files(
-                project.id, task.id, output_pdf, output_docx
-            )
+            project_outputs = save_project_output_files(project.id, task.id, output_docx)
             meta = pm.load(project)
-            pm.set_outputs(meta, docx_path=project_outputs['docx'], pdf_path=project_outputs['pdf'])
+            pm.set_outputs(meta, docx_path=project_outputs['docx'])
             meta['ml_result'] = ml_response
+            meta['uploaded_images'] = uploaded_images
             meta['last_task_report_path'] = report_path
             meta['errors'] = []
             pm.save(project, meta)
@@ -172,7 +180,7 @@ def run_document_task_pipeline(
     return {
         'type': 'success',
         'report': report,
-        'output_path': output_pdf,
+        'output_path': output_docx,
         'output_docx_path': output_docx,
         'report_path': report_path,
     }

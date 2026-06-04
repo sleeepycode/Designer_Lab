@@ -15,10 +15,6 @@ def _minimal_docx_bytes() -> bytes:
     return stream.getvalue()
 
 
-def _minimal_pdf_bytes() -> bytes:
-    return b'%PDF-1.4 minimal test pdf\n'
-
-
 @pytest.fixture(autouse=True)
 def mock_external_services(monkeypatch, tmp_path):
     def fake_extract(docx_path: Path, project_id: str | None = None) -> dict:
@@ -29,17 +25,23 @@ def mock_external_services(monkeypatch, tmp_path):
             'project_id': project_id,
         }
 
-    def fake_apply(project_id: str, title_page: dict, topic: str, ml_response=None) -> dict:
-        return {'status': 'completed', 'project_id': project_id, 'topic': topic}
+    def fake_apply(
+        project_id: str,
+        title_page: dict,
+        topic: str,
+        ml_response=None,
+        uploaded_images=None,
+        **_kwargs,
+    ) -> dict:
+        return {
+            'status': 'completed',
+            'project_id': project_id,
+            'topic': topic,
+            'uploaded_images_count': len(uploaded_images or []),
+        }
 
     def fake_info(project_id: str) -> dict:
         return {'project_id': project_id, 'has_extracted_data': True, 'files': []}
-
-    def fake_download_pdf(project_id: str, dest_path: str | Path) -> Path:
-        dest = Path(dest_path)
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_bytes(_minimal_pdf_bytes())
-        return dest
 
     def fake_download_docx(project_id: str, dest_path: str | Path) -> Path:
         dest = Path(dest_path)
@@ -50,21 +52,37 @@ def mock_external_services(monkeypatch, tmp_path):
     monkeypatch.setattr(doc_service_client, 'extract_document', fake_extract)
     monkeypatch.setattr(doc_service_client, 'apply_ml_changes', fake_apply)
     monkeypatch.setattr(doc_service_client, 'get_project_info', fake_info)
-    monkeypatch.setattr(doc_service_client, 'download_pdf', fake_download_pdf)
     monkeypatch.setattr(doc_service_client, 'download_docx', fake_download_docx)
     monkeypatch.setattr(orchestrator, 'extract_via_doc_service', fake_extract)
 
-    def fake_pipeline(docx_path, project_id, title_page, topic, output_pdf_path, output_docx_path):
+    def fake_pipeline(
+        docx_path,
+        project_id,
+        title_page,
+        topic,
+        output_docx_path,
+        uploaded_images=None,
+    ):
         fake_extract(docx_path, project_id)
-        result = fake_apply(project_id, title_page, topic)
-        fake_download_pdf(project_id, output_pdf_path)
+        result = fake_apply(
+            project_id,
+            title_page,
+            topic,
+            ml_response={'generated_sections': [], 'bibliography': []},
+            uploaded_images=uploaded_images,
+        )
         fake_download_docx(project_id, output_docx_path)
-        return result
+        return {
+            'extract': fake_extract(docx_path, project_id),
+            'apply_result': result,
+            'project_id': project_id,
+            'uploaded_images_count': len(uploaded_images or []),
+        }
 
     monkeypatch.setattr(orchestrator, 'run_doc_service_pipeline', fake_pipeline)
     monkeypatch.setattr(doc_service_client, 'ping', lambda: {'ok': True})
 
-    def fake_analyze_image_file(image_path, topic, document_text=''):
+    def fake_analyze_image_file(image_path, topic, document_text='', project_id=None):
         return {
             'path': str(image_path),
             'type': 'diagram',

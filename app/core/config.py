@@ -17,7 +17,12 @@ class Settings(BaseSettings):
     projects_dir: str = 'storage/projects'
 
     doc_service_base_url: str = 'https://sleeepycode-designer-lab-1dc4.twc1.net'
+    doc_service_timeout: int = 900
     ml_service_base_url: str = ''
+    ml_timeout: int = 900
+
+    # Публичный URL backend №1 — для images[].path (ML и doc-service скачивают по HTTP)
+    backend_public_url: str = 'http://127.0.0.1:8002'
 
     auth_secret_key: str = 'change-me-in-production'
     auth_token_expire_minutes: int = 60 * 24 * 7

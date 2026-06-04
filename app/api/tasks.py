@@ -151,9 +151,9 @@ def download_result(
     task_id: str,
     user_id: str = Query(..., description='Идентификатор пользователя'),
     format: str = Query(
-        default='pdf',
+        default='docx',
         alias='format',
-        description='Формат: pdf или docx',
+        description='Только docx',
     ),
     db: Session = Depends(get_db),
 ):

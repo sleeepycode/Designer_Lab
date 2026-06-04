@@ -134,8 +134,7 @@ def test_download_project_result_returns_latest_completed_output(tmp_path):
         assert task_resp.status_code == 200
 
         download_pdf = client.get(f"/projects/{project_id}/download?user_id=user-1&format=pdf")
-        assert download_pdf.status_code == 200
-        assert download_pdf.headers["content-type"] == "application/pdf"
+        assert download_pdf.status_code == 400
 
         download_docx = client.get(f"/projects/{project_id}/download?user_id=user-1&format=docx")
         assert download_docx.status_code == 200
@@ -325,9 +324,7 @@ def test_post_process_project_runs_same_pipeline_as_tasks(tmp_path):
         assert body["status"] == "ready"
         task_id = body["task_id"]
 
-        out_pdf = Path(settings.projects_dir) / project_id / "output" / f"{task_id}.pdf"
         out_docx = Path(settings.projects_dir) / project_id / "output" / f"{task_id}.docx"
-        assert out_pdf.exists()
         assert out_docx.exists()
 
 

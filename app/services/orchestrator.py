@@ -1,7 +1,6 @@
 """
-Frontend → Backend №1 → doc-service → (ML внутри №2) → doc-service → Backend №1 → Frontend.
-
-Сохраняем оба формата: PDF и DOCX (две кнопки на фронте).
+Frontend → Backend №1 → doc-service (extract) → ML (analyze) → doc-service (apply_ml_changes)
+→ DOCX → Frontend.
 """
 
 from __future__ import annotations
@@ -51,24 +50,52 @@ def run_doc_service_pipeline(
     project_id: str,
     title_page: dict,
     topic: str,
-    output_pdf_path: str | Path,
     output_docx_path: str | Path,
+    uploaded_images: list[dict] | None = None,
 ) -> dict[str, Any]:
     """
     1) POST /documents/extract
-    2) POST /documents/apply_ml_changes
-    3) GET /documents/download-pdf + GET /documents/download (DOCX)
+    2) POST ML /analyze
+    3) POST /documents/apply_ml_changes (ml_response + uploaded_images)
+    4) GET /documents/download — готовый DOCX
     """
-    doc_service_client.extract_document(docx_path, project_id)
-    apply_result = doc_service_client.apply_ml_changes(project_id, title_page, topic)
-    doc_service_client.download_pdf(project_id, output_pdf_path)
+    extract_result = doc_service_client.extract_document(docx_path, project_id)
+
+    if ml_client.is_configured():
+        try:
+            ml_response = ml_client.analyze_document_for_project(
+                project_id,
+                extract_result,
+                topic,
+                uploaded_images=uploaded_images,
+            )
+        except Exception as exc:
+            ml_response = ml_client.minimal_ml_fallback(topic, str(exc))
+    else:
+        ml_response = ml_client.minimal_ml_fallback(topic, 'ML не настроен')
+
+    apply_result = doc_service_client.apply_ml_changes(
+        project_id,
+        title_page,
+        topic,
+        ml_response=ml_response,
+        uploaded_images=uploaded_images or [],
+    )
     doc_service_client.download_docx(project_id, output_docx_path)
-    return apply_result
+
+    return {
+        'extract': extract_result,
+        'apply_result': apply_result,
+        'ml_response': ml_response,
+        'project_id': project_id,
+        'uploaded_images_count': len(uploaded_images or []),
+    }
 
 
 def title_page_from_form(payload: dict | None) -> dict:
     payload = payload or {}
     return {
+        'faculty': payload.get('faculty', ''),
         'department': payload.get('department', ''),
         'lab_title': payload.get('lab_title', ''),
         'lab_number': payload.get('lab_number', ''),

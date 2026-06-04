@@ -2,7 +2,9 @@
 HTTP-клиент doc-service (бэкенд №2).
 Контракт: https://sleeepycode-designer-lab-1dc4.twc1.net/docs
 
-Backend №1 не вызывает ML — в apply_ml_changes передаётся topic, ML дергает doc-service.
+Backend №1 при process передаёт topic, title_page, uploaded_images (HTTP URL).
+ML по user-картинкам при upload — отдельно POST /analyze (см. ml_client).
+Локальный doc-service ждёт готовый `ml_response` от Backend №1 (см. `orchestrator.py`).
 """
 
 from __future__ import annotations
@@ -48,7 +50,8 @@ def extract_document(docx_path: Path, project_id: str | None = None) -> dict:
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             )
         }
-        with httpx.Client(timeout=120.0) as client:
+        timeout = float(settings.doc_service_timeout)
+        with httpx.Client(timeout=timeout) as client:
             response = client.post(url, files=files, data=data or None)
     response.raise_for_status()
     return response.json()
@@ -59,23 +62,26 @@ def apply_ml_changes(
     title_page: dict,
     topic: str,
     ml_response: dict | None = None,
+    uploaded_images: list[dict] | None = None,
 ) -> dict[str, Any]:
     """
     POST /documents/apply_ml_changes
 
     Бэкенд №2: extract уже выполнен для project_id → ML (по topic) → сборка DOCX.
-    ml_response не передаём с backend №1, если doc-service сам вызывает ML.
+    uploaded_images — картинки пользователя с HTTP path (см. list_project_uploaded_images).
     """
     url = f'{_base_url()}/documents/apply_ml_changes'
     body: dict[str, Any] = {
         'project_id': project_id,
         'title_page': title_page,
         'topic': topic,
+        'uploaded_images': uploaded_images or [],
     }
     if ml_response is not None:
         body['ml_response'] = ml_response
 
-    with httpx.Client(timeout=300.0) as client:
+    timeout = float(settings.doc_service_timeout)
+    with httpx.Client(timeout=timeout) as client:
         response = client.post(url, json=body)
 
     if response.status_code >= 400:
@@ -91,7 +97,8 @@ def apply_ml_changes(
 def get_project_info(project_id: str) -> dict[str, Any]:
     """GET /documents/info/{project_id}"""
     url = f'{_base_url()}/documents/info/{project_id}'
-    with httpx.Client(timeout=30.0) as client:
+    timeout = float(settings.doc_service_timeout)
+    with httpx.Client(timeout=timeout) as client:
         response = client.get(url)
     response.raise_for_status()
     return response.json()
@@ -102,20 +109,10 @@ def download_docx(project_id: str, dest_path: str | Path) -> Path:
     url = f'{_base_url()}/documents/download/{project_id}'
     dest = Path(dest_path)
     dest.parent.mkdir(parents=True, exist_ok=True)
-    with httpx.Client(timeout=120.0) as client:
+    timeout = float(settings.doc_service_timeout)
+    with httpx.Client(timeout=timeout) as client:
         response = client.get(url)
     response.raise_for_status()
     dest.write_bytes(response.content)
     return dest
 
-
-def download_pdf(project_id: str, dest_path: str | Path) -> Path:
-    """GET /documents/download-pdf/{project_id} — готовый PDF для пользователя."""
-    url = f'{_base_url()}/documents/download-pdf/{project_id}'
-    dest = Path(dest_path)
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    with httpx.Client(timeout=180.0) as client:
-        response = client.get(url)
-    response.raise_for_status()
-    dest.write_bytes(response.content)
-    return dest

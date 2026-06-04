@@ -99,8 +99,7 @@ def test_create_task_success_and_artifacts_available(client: TestClient):
     assert status_data["has_report"] is True
 
     download_pdf = client.get(f"/tasks/{task_id}/download?user_id=demo-user-1&format=pdf")
-    assert download_pdf.status_code == 200
-    assert download_pdf.headers["content-type"] == "application/pdf"
+    assert download_pdf.status_code == 400
 
     download_docx = client.get(f"/tasks/{task_id}/download?user_id=demo-user-1&format=docx")
     assert download_docx.status_code == 200
@@ -337,7 +336,6 @@ def test_task_can_be_linked_to_project_and_update_project_status(client: TestCli
     assert project_status_resp.status_code == 200
     assert project_status_resp.json()["status"] == "ready"
 
-    assert (Path(settings.projects_dir) / project_id / "output" / f"{task_id}.pdf").exists()
     assert (Path(settings.projects_dir) / project_id / "output" / f"{task_id}.docx").exists()
 
 

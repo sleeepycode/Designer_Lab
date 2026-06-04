@@ -38,7 +38,7 @@ def register_uploaded_image_in_metadata(
         return suggestion
 
     try:
-        ml_item = ml_client.analyze_image_file(image_path, topic)
+        ml_item = ml_client.analyze_image_file(image_path, topic, project_id=project_id)
         ml_results[image_path.name] = ml_item
         suggestion = suggestion_from_ml_item(project_id, image_path, ml_item)
     except Exception as exc:
