@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     app_name: str = 'Lab Formatter MVP'
     debug: bool = True
     cors_origins: str = 'http://localhost:3000,http://127.0.0.1:3000'
-    database_url: str = 'postgresql+psycopg://postgres:postgres@localhost:5432/lab_formatter'
+    database_url: str = 'sqlite:///./lab_formatter.db'
 
     storage_dir: str = 'storage'
     input_dir: str = 'storage/inputs'

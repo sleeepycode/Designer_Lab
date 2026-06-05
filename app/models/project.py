@@ -22,7 +22,12 @@ class Project(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     status: Mapped[ProjectStatus] = mapped_column(
-        Enum(ProjectStatus, values_callable=lambda e: [item.value for item in e], name="project_status"),
+        Enum(
+            ProjectStatus,
+            values_callable=lambda e: [item.value for item in e],
+            name='project_status',
+            native_enum=False,
+        ),
         default=ProjectStatus.UPLOADED,
         nullable=False,
     )

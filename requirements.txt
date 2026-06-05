@@ -2,7 +2,7 @@ fastapi
 uvicorn[standard]
 sqlalchemy
 alembic
-psycopg[binary]
+# psycopg[binary]  # только если вернётесь на PostgreSQL
 pydantic
 pydantic-settings
 python-multipart

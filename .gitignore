@@ -12,6 +12,8 @@ storage/
 
 *.db
 *.sqlite3
+lab_formatter.db
+lab_formatter.db-journal
 
 .pytest_cache/
 

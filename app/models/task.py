@@ -21,7 +21,12 @@ class DocumentTask(Base):
     user_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     project_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     status: Mapped[TaskStatus] = mapped_column(
-        Enum(TaskStatus, values_callable=lambda e: [item.value for item in e], name='task_status'),
+        Enum(
+            TaskStatus,
+            values_callable=lambda e: [item.value for item in e],
+            name='task_status',
+            native_enum=False,
+        ),
         default=TaskStatus.CREATED,
         nullable=False,
     )

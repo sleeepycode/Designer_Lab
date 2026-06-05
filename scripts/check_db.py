@@ -2,35 +2,25 @@
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 
-sys.stdout.reconfigure(encoding="utf-8")
-
-from _bootstrap import add_project_root
-
-add_project_root()
-
-from sqlalchemy import create_engine, text
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.core.config import settings
+from app.core.db import check_db_connection, init_db
 
 
-def check(url: str, label: str) -> bool:
-    print(f"\n--- {label} ---")
-    print(f"URL: {url}")
+def main() -> int:
+    print(f"database_url = {settings.database_url}")
     try:
-        engine = create_engine(url)
-        with engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
-        print("OK: подключение успешно")
-        return True
+        check_db_connection()
+        init_db()
+        print("OK: подключение к БД работает, таблицы на месте.")
+        return 0
     except Exception as exc:
-        print(f"FAIL: {type(exc).__name__}: {exc}")
-        return False
+        print(f"Ошибка: {exc}")
+        return 1
 
 
-if __name__ == "__main__":
-    ok = check(settings.database_url, "текущий .env")
-    if not settings.database_url.startswith("postgresql"):
-        print("\nВ .env ожидается PostgreSQL (postgresql+psycopg://...).")
-        ok = False
-    raise SystemExit(0 if ok else 1)
+if __name__ == '__main__':
+    raise SystemExit(main())
