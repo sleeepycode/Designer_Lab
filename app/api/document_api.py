@@ -76,13 +76,25 @@ async def apply_ml_changes_endpoint(
     project_id = body.get('project_id')
     ml_response = body.get('ml_response')
     title_page_data = body.get('title_page')
+    topic = body.get('topic') or 'лабораторная работа'
+    uploaded_images = body.get('uploaded_images') or []
     
     if not project_id:
         raise HTTPException(status_code=400, detail='project_id is required')
-    if not ml_response:
-        raise HTTPException(status_code=400, detail='ml_response is required')
     if not title_page_data:
         raise HTTPException(status_code=400, detail='title_page is required')
+
+    if not ml_response:
+        project_dir = ensure_project_dir(project_id)
+        extracted_path = project_dir / 'extract_response.json'
+        if not extracted_path.exists():
+            raise HTTPException(status_code=404, detail='extract_response.json not found')
+        with open(extracted_path, 'r', encoding='utf-8') as f:
+            extracted_structure = json.load(f)
+        ml_response = analyze_document_with_ml(project_id, extracted_structure, topic)
+
+    if uploaded_images:
+        ml_response.setdefault('uploaded_images', uploaded_images)
     
     result = assemble_full_document(
         project_id=project_id,

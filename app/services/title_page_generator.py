@@ -87,8 +87,8 @@ def generate_title_page(
         return paragraph
 
     title_lines = [
-        (f"{settings.city} {settings.year}", WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
-        ('', WD_ALIGN_PARAGRAPH.CENTER, None, False, 0, 0),
+        (f"{settings.year}", WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
+        (f"{settings.city},", WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, None, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, None, False, 0, 0),
         (f"{reviewer_name}", WD_ALIGN_PARAGRAPH.RIGHT, settings.font_size_pt, False, 0, 0),
@@ -108,7 +108,12 @@ def generate_title_page(
         ('', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
         (f"Кафедра «{department}»", WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
         ('', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, False, 0, 0),
-        (settings.university_name, WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, True, 0, 0),
+        ('«Московский технический университет связи и информатики»', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, True, 0, 0),
+        ('образовательное учреждение высшего образования', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, True, 0, 0),
+        ('бюджетное', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, True, 0, 0),
+        ('Ордена трудового Красного Знамени федеральное государственное', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, True, 0, 0),
+        ('МАССОВЫХ КОММУНИКАЦИЙ РОССИЙСКОЙ ФЕДЕРАЦИИ', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, True, 0, 0),
+        ('МИНИСТЕРСТВО ЦИФРОВОГО РАЗВИТИЯ, СВЯЗИ И', WD_ALIGN_PARAGRAPH.CENTER, settings.font_size_pt, True, 0, 0)
     ]
 
     for text, alignment, size, bold, space_before, space_after in reversed(title_lines):

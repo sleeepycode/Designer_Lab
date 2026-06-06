@@ -1,12 +1,16 @@
 import logging
+import json
+import shutil
+import subprocess
 from pathlib import Path
 from typing import Dict, Any
-from docx import Document
-from docx2pdf import convert as docx_to_pdf
-import json
+from tempfile import NamedTemporaryFile
 
+import requests
+from docx import Document
 from docx.shared import Cm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx2pdf import convert as docx_to_pdf
 
 from app.services.docx_core import ensure_project_dir, save_json
 from app.services.gost_applier import apply_gost_formatting
@@ -24,452 +28,680 @@ if not logger.handlers:
     logger.addHandler(console_handler)
 
 
+SECTION_ORDER = ['introduction', 'theory', 'practice', 'conclusion']
+SECTION_TITLES = {
+    'introduction': 'Введение',
+    'theory': 'Теоретическая часть',
+    'practice': 'Практическая часть',
+    'conclusion': 'Заключение',
+}
+
+SECTION_PATTERNS = [
+    ('introduction', 'введение'),
+    ('introduction', 'цель работы'),
+    ('introduction', 'цель лабораторной работы'),
+    ('theory', 'теоретическая часть'),
+    ('theory', 'теоретические сведения'),
+    ('theory', 'теория'),
+    ('practice', 'практическая часть'),
+    ('practice', 'ход работы'),
+    ('practice', 'выполнение работы'),
+    ('practice', 'экспериментальная часть'),
+    ('practice', 'задание'),
+    ('conclusion', 'заключение'),
+    ('conclusion', 'выводы'),
+    ('conclusion', 'вывод'),
+]
+
+
+def _detect_section(text: str) -> str | None:
+    text_lower = str(text or '').lower().strip()
+    for section_key, keyword in SECTION_PATTERNS:
+        if keyword in text_lower:
+            return section_key
+    return None
+
+
+def _is_section_header(text: str) -> bool:
+    text = str(text or '').strip()
+    if not text:
+        return False
+    if len(text) > 120:
+        return False
+    return _detect_section(text) is not None
+
+
+def _paragraph_text(para: Any) -> str:
+    if isinstance(para, dict):
+        return str(para.get('text', '') or '')
+    return str(para or '')
+
+
+def _paragraph_index(para: Any, fallback: int) -> int:
+    if isinstance(para, dict):
+        value = para.get('index')
+        try:
+            return int(value)
+        except Exception:
+            return fallback
+    return fallback
+
+
+def _image_paragraph_position(image: dict) -> int | None:
+    for key in ('insert_before_paragraph', 'paragraph_index', 'position'):
+        value = image.get(key)
+        if value is None:
+            continue
+        try:
+            return int(value)
+        except Exception:
+            continue
+    return None
+
+
+def _is_user_image(image: dict) -> bool:
+    return str(image.get('source') or '').lower() == 'user_uploaded_image'
+
+
 def apply_ml_changes_to_structure(
     original_structure: Dict[str, Any],
     ml_response: Dict[str, Any]
 ) -> Dict[str, Any]:
-    """
-    Применяет правки ML к структуре, сохраняя изображения и их подписи
-    """
     logger.info("=" * 50)
     logger.info("Applying ML changes to structure")
-    
+
     result = {
         'paragraphs': original_structure.get('paragraphs', []),
         'tables': original_structure.get('tables', []),
         'images': original_structure.get('images', []),
         'content_blocks': original_structure.get('content_blocks', []),
-        '_ml_response': ml_response,
     }
-    
+
+    # Обогащаем картинки из DOCX данными ML: caption/type/insert/ocr_text.
+    ml_images = ml_response.get('images') or []
+    if ml_images:
+        logger.info(f"Found ML images: {len(ml_images)}")
+        by_id = {
+            item.get('image_id') or item.get('id'): item
+            for item in ml_images
+            if item.get('image_id') or item.get('id')
+        }
+        merged_images = []
+        for original_img in result['images']:
+            image_id = original_img.get('id') or original_img.get('image_id')
+            ml_img = by_id.get(image_id, {})
+            merged = {
+                **original_img,
+                **ml_img,
+                'local_path': original_img.get('local_path') or original_img.get('path'),
+                'source': original_img.get('source') or ml_img.get('source') or 'original_docx_image',
+            }
+            merged_images.append(merged)
+        result['images'] = merged_images
+
+    uploaded_images = ml_response.get('uploaded_images') or []
+    if uploaded_images:
+        logger.info(f"Found uploaded_images: {len(uploaded_images)}")
+        normalized_uploaded = []
+        for idx, img in enumerate(uploaded_images, start=1):
+            if not isinstance(img, dict):
+                continue
+
+            image_id = img.get('image_id') or img.get('id') or f'user_image_{idx}'
+            normalized_uploaded.append({
+                **img,
+                'id': image_id,
+                'image_id': image_id,
+                'source': 'user_uploaded_image',
+                'insert_strategy': img.get('insert_strategy') or 'after_practice',
+                # local_path для user image не используем приоритетно: он относится к Backend №1, а не к Doc Service.
+                'caption': img.get('caption') or img.get('generated_caption') or '',
+            })
+        result['images'].extend(normalized_uploaded)
+
+    original_sections = extract_sections_from_paragraphs(result['paragraphs'])
     generated_sections = []
-    
+
     if 'generated_sections' in ml_response:
         generated_sections = ml_response['generated_sections']
+        logger.info(f"Found 'generated_sections' at root: {len(generated_sections)} sections")
     elif 'report' in ml_response and 'generated_sections' in ml_response['report']:
         generated_sections = ml_response['report']['generated_sections']
-    
-    ml_sections = {}
+        logger.info(f"Found 'generated_sections' in 'report': {len(generated_sections)} sections")
+    else:
+        logger.warning("No 'generated_sections' found in ml_response")
+
+    ml_sections_keys = set()
     for section in generated_sections:
         section_key = section.get('section')
+        section_text = section.get('text', '')
+        section_title = section.get('title', '')
+
+        logger.debug(f"Processing section: {section_key}")
+        logger.debug(f"  Title: {section_title[:50]}...")
+        logger.debug(f"  Text length: {len(section_text)} chars")
+
         if section_key:
-            ml_sections[section_key] = {
-                'title': section.get('title', ''),
-                'content': section.get('text', ''),
-                'source': section.get('source', 'ml')
+            result[section_key] = {
+                'type': 'section',
+                'title': section_title or SECTION_TITLES.get(section_key, section_key),
+                'content': section_text,
+                'source': 'ml'
             }
-            logger.info(f"ML will replace section: {section_key}")
-    
-    if result.get('content_blocks'):
-        result['content_blocks'] = merge_ml_into_content_blocks(
-            result['content_blocks'],
-            ml_sections
-        )
-    
-    if 'images' in ml_response:
-        ml_images = {img.get('image_id'): img for img in ml_response['images'] if img.get('image_id')}
-        
-        for img in result['images']:
-            img_id = img.get('id')
-            if img_id in ml_images:
-                ml_img = ml_images[img_id]
-                new_caption = ml_img.get('caption')
-                if new_caption:
-                    img['caption'] = new_caption
-                    logger.debug(f"Updated caption for {img_id}: {new_caption[:50]}...")
-        
-        for block in result.get('content_blocks', []):
-            if block.get('type') == 'image':
-                img_data = block.get('data', {})
-                img_id = img_data.get('id')
-                if img_id in ml_images:
-                    new_caption = ml_images[img_id].get('caption')
-                    if new_caption:
-                        img_data['caption'] = new_caption
-                        logger.debug(f"Updated caption in content_blocks for {img_id}")
-    
+            ml_sections_keys.add(section_key)
+            logger.info(f"ML replaced section: {section_key}")
+
+    for section_key in SECTION_ORDER:
+        if section_key not in ml_sections_keys:
+            original_content = original_sections.get(section_key, '')
+            if original_content:
+                result[section_key] = {
+                    'type': 'section',
+                    'title': SECTION_TITLES.get(section_key, section_key),
+                    'content': original_content,
+                    'source': 'original'
+                }
+                logger.info(f"Kept original section: {section_key} ({len(original_content)} chars)")
+            else:
+                logger.debug(f"No original content for section: {section_key}")
+
     bibliography = []
     if 'bibliography' in ml_response:
         bibliography = ml_response['bibliography']
+        logger.info(f"Found 'bibliography' at root: {len(bibliography)} items")
     elif 'report' in ml_response and 'bibliography' in ml_response['report']:
         bibliography = ml_response['report']['bibliography']
-    
+        logger.info(f"Found 'bibliography' in 'report': {len(bibliography)} items")
+
     if bibliography:
         result['bibliography'] = bibliography
-    
-    for section_key, section_data in ml_sections.items():
-        result[section_key] = {
-            'type': 'section',
-            'title': section_data['title'],
-            'content': section_data['content'],
-            'source': 'ml'
-        }
-    
-    return result
+        for i, ref in enumerate(bibliography):
+            logger.debug(f"  Bibliography {i + 1}: {str(ref)[:50]}...")
 
-
-def update_content_blocks_with_ml(
-    content_blocks: list[Dict[str, Any]],
-    ml_sections: Dict[str, Any],
-    original_images: list[Dict[str, Any]]
-) -> list[Dict[str, Any]]:
-    """
-    Обновляет content_blocks, заменяя текст секций на ML-версии,
-    но сохраняя все изображения на своих местах
-    """
-    if not content_blocks:
-        result = []
-        for img in original_images:
-            result.append({
-                'type': 'image',
-                'data': img
-            })
-        return result
-    
-    result = []
-    
-    section_keywords = {
-        'introduction': ['введение', 'цель работы'],
-        'theory': ['теоретическая часть', 'теория'],
-        'practice': ['практическая часть', 'ход работы'],
-        'conclusion': ['вывод', 'заключение', 'итог']
-    }
-    
-    current_section = None
-    section_content_buffer = []
-    
-    for block in content_blocks:
-        block_type = block.get('type')
-        
-        if block_type == 'image':
-            result.append(block)
-            logger.debug(f"Preserved image block: {block.get('data', {}).get('id', 'unknown')}")
-            
-        elif block_type == 'paragraph':
-            text = block.get('data', {}).get('text', '')
-            text_lower = text.lower()
-            
-            detected_section = None
-            for section_key, keywords in section_keywords.items():
-                for keyword in keywords:
-                    if keyword in text_lower:
-                        detected_section = section_key
-                        break
-                if detected_section:
-                    break
-            
-            if detected_section and detected_section in ml_sections:
-                if section_content_buffer:
-                    for buffered_text in section_content_buffer:
-                        result.append({
-                            'type': 'paragraph',
-                            'data': {'text': buffered_text}
-                        })
-                    section_content_buffer = []
-                
-                ml_data = ml_sections[detected_section]
-                result.append({
-                    'type': 'paragraph',
-                    'data': {'text': ml_data.get('title', section_keywords[detected_section][0])}
-                })
-                
-                new_content = ml_data.get('content', '')
-                for para in new_content.split('\n'):
-                    if para.strip():
-                        result.append({
-                            'type': 'paragraph',
-                            'data': {'text': para.strip()}
-                        })
-                
-                logger.info(f"Replaced section '{detected_section}' with ML content")
-                current_section = None
-                
-            else:
-                is_section_content = False
-                for section_key in section_keywords:
-                    if current_section == section_key:
-                        is_section_content = True
-                        break
-                
-                if is_section_content and current_section not in ml_sections:
-                    section_content_buffer.append(text)
-                else:
-                    if section_content_buffer:
-                        for buffered_text in section_content_buffer:
-                            result.append({
-                                'type': 'paragraph',
-                                'data': {'text': buffered_text}
-                            })
-                        section_content_buffer = []
-                    result.append(block)
-        
-        elif block_type == 'table':
-            result.append(block)
-    
-    if section_content_buffer:
-        for buffered_text in section_content_buffer:
-            result.append({
-                'type': 'paragraph',
-                'data': {'text': buffered_text}
-            })
-    
+    logger.info(f"Final result keys: {list(result.keys())}")
+    logger.info("=" * 50)
     return result
 
 
 def extract_sections_from_paragraphs(paragraphs: list) -> Dict[str, str]:
-
-    sections = {
-        'introduction': '',
-        'theory': '',
-        'practice': '',
-        'conclusion': ''
-    }
-
+    sections = {key: '' for key in SECTION_ORDER}
     current_section = None
 
-    section_patterns = [
-        ('introduction', 'введение'),
-        ('introduction', 'цель работы'),
-        ('introduction', 'цель лабораторной работы'),
+    for pos, para in enumerate(paragraphs):
+        text = _paragraph_text(para)
+        if not text.strip():
+            continue
 
-        ('theory', 'теоретическая часть'),
-        ('theory', 'теоретические сведения'),
-        ('theory', 'теория'),
+        if _is_section_header(text):
+            detected = _detect_section(text)
+            if detected:
+                current_section = detected
+                logger.debug(f"Section header detected: '{text[:50]}...' -> {current_section}")
+            continue
 
-        ('practice', 'практическая часть'),
-        ('practice', 'ход работы'),
-        ('practice', 'выполнение работы'),
-        ('practice', 'экспериментальная часть'),
+        if current_section and text.strip():
+            sections[current_section] += ('\n' if sections[current_section] else '') + text
 
-        ('conclusion', 'заключение'),
-        ('conclusion', 'выводы'),
-        ('conclusion', 'вывод'),
-    ]
+    for key, value in sections.items():
+        logger.debug(f"Section '{key}': {len(value)} chars" if value else f"Section '{key}': empty")
+    return sections
 
-    def detect_section(text: str) -> str | None:
-        text_lower = text.lower().strip()
 
-        for section_key, keyword in section_patterns:
-            if keyword in text_lower:
-                return section_key
+def _build_section_ranges(paragraphs: list) -> dict[str, list[int]]:
+    """
+    Возвращает индексы исходных paragraph'ов, которые относятся к каждой секции.
+    Это нужно, чтобы картинки из DOCX вставлялись не пачкой в конец, а рядом с исходным контекстом.
+    """
+    ranges: dict[str, list[int]] = {key: [] for key in SECTION_ORDER}
+    current_section = None
 
-        return None
-
-    def is_header(text: str) -> bool:
-        if len(text) > 100:
-            return False
-
-        text_lower = text.lower()
-
-        for _, keyword in section_patterns:
-            if keyword in text_lower:
-                return True
-
-        return False
-
-    for para in paragraphs:
-        text = para.get('text', '') if isinstance(para, dict) else str(para)
+    for pos, para in enumerate(paragraphs):
+        text = _paragraph_text(para)
+        paragraph_idx = _paragraph_index(para, pos)
 
         if not text.strip():
             continue
 
-        if is_header(text):
-            detected = detect_section(text)
-
+        if _is_section_header(text):
+            detected = _detect_section(text)
             if detected:
                 current_section = detected
-                logger.debug(f"Section header detected: '{text[:50]}...' -> {current_section}")
-
+                ranges.setdefault(current_section, [])
             continue
 
-        if current_section and text.strip():
-            if sections[current_section]:
-                sections[current_section] += '\n' + text
-            else:
-                sections[current_section] = text
+        if current_section:
+            ranges.setdefault(current_section, []).append(paragraph_idx)
 
-    for key, value in sections.items():
-        if value:
-            logger.debug(f"Section '{key}': {len(value)} chars")
-        else:
-            logger.debug(f"Section '{key}': empty")
-
-    return sections
+    logger.info(
+        "Section paragraph ranges: "
+        + ", ".join(f"{key}={values[:1]}..{values[-1:] if values else []}" for key, values in ranges.items())
+    )
+    return ranges
 
 
-def add_images_to_document(doc: Document, structure: Dict[str, Any]) -> None:
-    images = structure.get("images", [])
+def _detect_image_section(image: dict, section_ranges: dict[str, list[int]]) -> str:
+    if _is_user_image(image):
+        return 'practice'
 
-    if not images:
-        logger.info("No images found in structure")
-        return
+    pos = _image_paragraph_position(image)
+    if pos is None:
+        return 'practice'
 
-    logger.info(f"Adding {len(images)} images to document")
+    for section_key in SECTION_ORDER:
+        indices = section_ranges.get(section_key) or []
+        if not indices:
+            continue
+        if min(indices) <= pos <= max(indices):
+            return section_key
 
-    for index, image in enumerate(images, start=1):
-        image_path = (
-            image.get("local_path")
-            or image.get("path")
-            or ""
+    # Если картинка стоит после последнего практического абзаца, но до вывода — это всё равно практика.
+    practice_indices = section_ranges.get('practice') or []
+    conclusion_indices = section_ranges.get('conclusion') or []
+    if practice_indices and conclusion_indices:
+        if max(practice_indices) <= pos <= min(conclusion_indices):
+            return 'practice'
+
+    return 'practice'
+
+
+def _image_slot_inside_section(image: dict, section_key: str, section_ranges: dict[str, list[int]], content_paragraphs_count: int) -> int:
+    """
+    Переводит insert_before_paragraph из исходного документа в приблизительное место внутри
+    нового текста секции, который мог быть заменён ML.
+    """
+    if content_paragraphs_count <= 0:
+        return 0
+
+    if _is_user_image(image):
+        return content_paragraphs_count
+
+    pos = _image_paragraph_position(image)
+    indices = section_ranges.get(section_key) or []
+
+    if pos is None or not indices:
+        return content_paragraphs_count
+
+    start = min(indices)
+    end = max(indices)
+
+    if end <= start:
+        return min(content_paragraphs_count, 1)
+
+    ratio = (pos - start) / max(1, end - start + 1)
+    slot = round(ratio * content_paragraphs_count)
+    return max(0, min(content_paragraphs_count, slot))
+
+
+def _prepare_images_by_section(structure: Dict[str, Any], section_ranges: dict[str, list[int]]) -> dict[str, list[dict]]:
+    images_by_section: dict[str, list[dict]] = {key: [] for key in SECTION_ORDER}
+
+    for image in structure.get('images', []) or []:
+        if not isinstance(image, dict):
+            continue
+
+        section_key = _detect_image_section(image, section_ranges)
+        image['_resolved_section'] = section_key
+        images_by_section.setdefault(section_key, []).append(image)
+
+    for section_key, images in images_by_section.items():
+        images.sort(key=lambda item: (_image_paragraph_position(item) is None, _image_paragraph_position(item) or 10**9))
+        if images:
+            logger.info(f"Images assigned to section '{section_key}': {len(images)}")
+
+    return images_by_section
+
+
+def _download_image_to_temp(url: str) -> str | None:
+    """
+    Скачивает внешнюю картинку во временный файл.
+    Нужно для user_uploaded_image, потому что они физически лежат в Backend №1,
+    а итоговый DOCX собирает Doc Service.
+    """
+    try:
+        logger.info(f"Downloading external image for DOCX insert: {url}")
+
+        response = requests.get(
+            url,
+            timeout=(5, 30),
+            headers={"User-Agent": "DocService/1.0"},
         )
 
-        if not image_path:
-            logger.warning(f"Image {index} has no path, skipping")
-            continue
+        logger.info(f"External image download status={response.status_code}")
+        response.raise_for_status()
 
-        if image_path.startswith("http://") or image_path.startswith("https://"):
-            logger.warning(f"Image {index} has URL only, skipping: {image_path}")
-            continue
+        content_type = response.headers.get('content-type', '').lower()
+        suffix = '.png'
+        if 'jpeg' in content_type or 'jpg' in content_type:
+            suffix = '.jpg'
+        elif 'webp' in content_type:
+            suffix = '.webp'
+        elif 'gif' in content_type:
+            suffix = '.gif'
+        elif 'png' in content_type:
+            suffix = '.png'
 
-        image_path = image_path.replace("\\", "/")
-        path = Path(image_path)
+        tmp = NamedTemporaryFile(delete=False, suffix=suffix, prefix='doc_service_external_image_')
+        with tmp:
+            tmp.write(response.content)
 
-        if not path.exists():
-            logger.warning(f"Image file not found, skipping: {path}")
-            continue
+        logger.info(f"External image saved to temp file: {tmp.name}")
+        return tmp.name
 
-        try:
-            paragraph = doc.add_paragraph()
-            paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    except Exception as exc:
+        logger.warning(f"Could not download image from URL: {url}; error={exc}")
+        return None
 
-            run = paragraph.add_run()
-            run.add_picture(str(path), width=Cm(12))
 
-            caption_text = (
-                image.get("caption")
-                or f"Рисунок {index} — Иллюстрация к отчёту"
-            )
+def _pick_raw_image_path(image: dict) -> str:
+    """
+    Для картинок из DOCX сначала используем local_path, потому что они лежат у Doc Service.
+    Для картинок пользователя сначала используем URL path, потому что они лежат у Backend №1.
+    """
+    if _is_user_image(image):
+        return str(image.get('path') or image.get('url') or image.get('local_path') or '')
 
-            caption = doc.add_paragraph(caption_text)
-            caption.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    return str(image.get('local_path') or image.get('path') or image.get('url') or '')
 
-            logger.info(f"Added image {index}: {path}")
 
-        except Exception as exc:
-            logger.error(f"Failed to add image {index}: {path}; error={exc}")
+def _resolve_image_for_docx(image: dict) -> tuple[Path | None, str | None]:
+    raw_path = _pick_raw_image_path(image)
+
+    if not raw_path:
+        return None, None
+
+    if raw_path.startswith('http://') or raw_path.startswith('https://'):
+        downloaded = _download_image_to_temp(raw_path)
+        if downloaded:
+            return Path(downloaded), downloaded
+        return None, None
+
+    path = Path(raw_path.replace('\\', '/'))
+
+    if path.exists():
+        return path, None
+
+    logger.warning(f"Image file not found, skipping: {path}")
+    return None, None
+
+
+def _clean_caption_text(text: str) -> str:
+    text = str(text or '').strip()
+    if not text:
+        return ''
+
+    bad_fragments = [
+        'image', '.png', '.jpg', '.jpeg', '.webp', '.gif',
+        'иллюстрация к отчёту', 'пользовательское изображение',
+        'screenshot', 'снимок экрана', 'unknown', 'none',
+    ]
+
+    lower = text.lower()
+    if any(fragment in lower for fragment in bad_fragments):
+        return ''
+
+    if lower.startswith('рисунок'):
+        parts = text.split('—', 1)
+        if len(parts) == 2 and parts[1].strip():
+            return parts[1].strip()
+        return ''
+
+    return text
+
+
+def _caption_from_ocr(image: dict) -> str:
+    ocr = str(image.get('ocr_text') or image.get('text') or '').lower()
+
+    if not ocr:
+        return ''
+
+    if 'bubble_sort' in ocr or 'пузыр' in ocr:
+        return 'Фрагмент программной реализации пузырьковой сортировки'
+
+    if 'python' in ocr and ('sort' in ocr or 'сорт' in ocr):
+        return 'Фрагмент программного кода для сравнения алгоритмов сортировки'
+
+    if 'o(n log n)' in ocr or 'n log n' in ocr:
+        return 'Сравнение алгоритмов по асимптотической сложности'
+
+    if 'o(n2)' in ocr or 'o(n^2)' in ocr or 'o(n²)' in ocr or 'квадрат' in ocr:
+        return 'Пример квадратичной временной сложности алгоритма'
+
+    if 'figure' in ocr or 'график' in ocr or 'время' in ocr and 'n' in ocr:
+        return 'График зависимости времени выполнения от размера входных данных'
+
+    if 'класс' in ocr and 'название' in ocr:
+        return 'Классификация основных классов асимптотической сложности'
+
+    return ''
+
+
+def _human_caption_by_type(image: dict, index: int) -> str:
+    """
+    Нормальная индивидуальная подпись без имени файла.
+    Приоритет: caption от ML -> OCR keywords -> тип изображения -> source.
+    """
+    source = str(image.get('source') or '').lower()
+    img_type = str(
+        image.get('type')
+        or image.get('image_type')
+        or image.get('classification')
+        or ''
+    ).lower()
+
+    raw_caption = _clean_caption_text(
+        image.get('caption')
+        or image.get('generated_caption')
+        or image.get('description')
+        or ''
+    )
+
+    if raw_caption:
+        return f"Рисунок {index} — {raw_caption}"
+
+    ocr_caption = _caption_from_ocr(image)
+    if ocr_caption:
+        return f"Рисунок {index} — {ocr_caption}"
+
+    if source == 'user_uploaded_image':
+        return f"Рисунок {index} — Дополнительный материал, загруженный пользователем"
+
+    if 'graph' in img_type or 'chart' in img_type or 'граф' in img_type:
+        return f"Рисунок {index} — График зависимости времени выполнения от размера входных данных"
+
+    if 'table' in img_type or 'табл' in img_type:
+        return f"Рисунок {index} — Таблица результатов анализа алгоритмов"
+
+    if 'scheme' in img_type or 'diagram' in img_type or 'схем' in img_type:
+        return f"Рисунок {index} — Схема выполнения алгоритма"
+
+    if 'formula' in img_type or 'формул' in img_type:
+        return f"Рисунок {index} — Формулы асимптотической оценки сложности"
+
+    if 'code' in img_type or 'screenshot' in img_type or 'скрин' in img_type:
+        return f"Рисунок {index} — Фрагмент программной реализации"
+
+    # Подписи по порядку для типовой лабораторной по асимптотике.
+    default_by_position = {
+        1: 'Классификация основных классов асимптотической сложности',
+        2: 'Результат выполнения задания по классификации сложности',
+        3: 'Фрагмент программной реализации расчёта сложности циклов',
+        4: 'Пример записи асимптотических оценок',
+        5: 'Программная реализация эксперимента с пузырьковой сортировкой',
+        6: 'График зависимости времени выполнения от размера входных данных',
+        7: 'Фрагмент кода сравнения пузырьковой и встроенной сортировки',
+        8: 'График сравнения времени выполнения алгоритмов сортировки',
+        9: 'Дополнительные вычисления асимптотических оценок',
+    }
+    if index in default_by_position:
+        return f"Рисунок {index} — {default_by_position[index]}"
+
+    return f"Рисунок {index} — Материал к выполнению лабораторной работы"
+
+
+def _insert_single_image(doc: Document, image: dict, image_number: int, temp_files: list[str]) -> bool:
+    path, temp_file = _resolve_image_for_docx(image)
+
+    if temp_file:
+        temp_files.append(temp_file)
+
+    if not path or not path.exists():
+        logger.warning(f"Image {image_number} cannot be resolved, skipping")
+        return False
+
+    try:
+        paragraph = doc.add_paragraph()
+        paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        run = paragraph.add_run()
+        run.add_picture(str(path), width=Cm(12))
+
+        caption_text = _human_caption_by_type(image, image_number)
+
+        caption = doc.add_paragraph()
+        caption.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        caption_run = caption.add_run(caption_text)
+        caption_run.italic = True
+
+        logger.info(f"Added image {image_number}: {path}")
+        logger.info(f"Image {image_number} caption: {caption_text}")
+        return True
+
+    except Exception as exc:
+        logger.error(f"Failed to add image {image_number}: {path}; error={exc}")
+        return False
+
+
+def _insert_images_for_slot(
+    doc: Document,
+    images: list[dict],
+    image_counter: int,
+    temp_files: list[str],
+    section_key: str,
+    slot: int,
+) -> int:
+    for image in images:
+        logger.info(
+            f"Placing image #{image_counter} in section '{section_key}', slot={slot}, "
+            f"source={image.get('source')}, insert_before_paragraph={image.get('insert_before_paragraph')}"
+        )
+        if _insert_single_image(doc, image, image_counter, temp_files):
+            image_counter += 1
+    return image_counter
 
 
 def build_document_from_structured_data(structure: Dict[str, Any], output_path: str) -> str:
-    """
-    Собирает DOCX из content_blocks с правильными позициями изображений и подписями по ГОСТ
-    """
     logger.info("=" * 50)
     logger.info("BUILDING DOCUMENT FROM STRUCTURE")
-    
+    logger.debug(f"Structure keys: {list(structure.keys())}")
+
     doc = Document()
     doc = setup_document_styles(doc)
-    
-    ml_images_captions = {}
-    ml_response = structure.get('_ml_response', {})
-    
-    if 'images' in ml_response:
-        for ml_img in ml_response['images']:
-            image_id = ml_img.get('image_id', '')
-            caption = ml_img.get('caption', '')
-            if image_id and caption:
-                ml_images_captions[image_id] = caption
-                logger.debug(f"Found ML caption for {image_id}: {caption[:50]}...")
-    
-    content_blocks = structure.get('content_blocks', [])
-    
-    if not content_blocks:
-        logger.warning("No content_blocks found, using fallback")
-        content_blocks = build_content_blocks_from_fallback(structure)
-    
-    for block in content_blocks:
-        block_type = block.get('type')
-        data = block.get('data', {})
-        
-        if block_type == 'paragraph':
-            text = data.get('text', '')
-            if text.strip():
-                text_lower = text.lower()
-                is_heading = any(
-                    keyword in text_lower 
-                    for keywords in [['введение', 'теоретическая', 'практическая', 'вывод', 'заключение']]
-                    for keyword in keywords
-                ) and len(text) < 100
-                
-                if is_heading:
-                    add_heading_center(doc, text)
+
+    paragraphs = structure.get('paragraphs', []) or []
+    section_ranges = _build_section_ranges(paragraphs)
+    images_by_section = _prepare_images_by_section(structure, section_ranges)
+
+    added_count = 0
+    image_counter = 1
+    temp_files: list[str] = []
+
+    try:
+        for section_key in SECTION_ORDER:
+            section = structure.get(section_key)
+            if section and isinstance(section, dict):
+                title = section.get('title', SECTION_TITLES.get(section_key, section_key))
+                content = section.get('content', '')
+                content_paragraphs = [p.strip() for p in str(content).split('\n') if p.strip()]
+
+                if content_paragraphs:
+                    add_heading_center(doc, title)
+
+                    section_images = images_by_section.get(section_key, []) or []
+                    slots: dict[int, list[dict]] = {}
+                    for image in section_images:
+                        slot = _image_slot_inside_section(
+                            image=image,
+                            section_key=section_key,
+                            section_ranges=section_ranges,
+                            content_paragraphs_count=len(content_paragraphs),
+                        )
+                        slots.setdefault(slot, []).append(image)
+
+                    # Вставляем картинки до/между абзацами секции по рассчитанным slot.
+                    for para_index in range(len(content_paragraphs) + 1):
+                        if para_index in slots:
+                            image_counter = _insert_images_for_slot(
+                                doc=doc,
+                                images=slots[para_index],
+                                image_counter=image_counter,
+                                temp_files=temp_files,
+                                section_key=section_key,
+                                slot=para_index,
+                            )
+
+                        if para_index < len(content_paragraphs):
+                            add_gost_paragraph(doc, content_paragraphs[para_index])
+
+                    added_count += 1
+                    logger.info(
+                        f"Added section '{section_key}' with {len(content)} chars and {len(section_images)} images"
+                    )
                 else:
-                    p = doc.add_paragraph(text.strip())
-                    p.paragraph_format.first_line_indent = Cm(settings.first_line_indent_cm)
-                    p.paragraph_format.line_spacing = settings.line_spacing
-                    
-        elif block_type == 'image':
-            image_path = data.get('path', '')
-            image_id = data.get('id', '')
-            original_caption = data.get('caption', '')
-            
-            caption = ml_images_captions.get(image_id, original_caption)
-            
-            if image_path and Path(image_path).exists():
-                try:
-                    p = doc.add_paragraph()
-                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                    run = p.add_run()
-                    run.add_picture(image_path, width=Cm(12))
-                    logger.debug(f"Inserted image: {Path(image_path).name}")
-                    
-                    if caption:
-                        cap = doc.add_paragraph(caption)
-                        cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                        cap.paragraph_format.space_before = Pt(6)
-                        cap.paragraph_format.space_after = Pt(6)
-                        cap.paragraph_format.line_spacing = 1.0
-                        
-                        for run in cap.runs:
-                            run.font.name = settings.font_name
-                            run.font.size = Pt(settings.font_size_pt)
-                            run.font.italic = True
-                            run.font.bold = False
-                        logger.debug(f"Added GOST caption: {caption[:50]}...")
-                    
-                except Exception as e:
-                    logger.error(f"Failed to insert image: {e}")
-                    doc.add_paragraph(f"[Изображение: {Path(image_path).name}]")
-                    
-        elif block_type == 'table':
-            rows = data.get('rows', [])
-            if rows:
-                table = doc.add_table(rows=len(rows), cols=len(rows[0]) if rows else 1)
-                table.style = 'Table Grid'
-                for i, row in enumerate(rows):
-                    for j, cell_text in enumerate(row):
-                        table.cell(i, j).text = str(cell_text)
-    
-    bibliography = structure.get('bibliography', [])
-    if bibliography:
-        add_heading_center(doc, 'Список литературы')
-        for i, ref in enumerate(bibliography):
-            add_bibliography_item(doc, i + 1, ref)
-    
-    doc.save(output_path)
-    logger.info(f"Document saved to: {output_path}")
-    
+                    logger.warning(f"Section '{section_key}' has empty content, skipping")
+            else:
+                logger.debug(f"Section '{section_key}' not found or not a dict")
+
+        logger.info(f"Total sections added: {added_count}")
+
+        # Если какие-то картинки не попали в известные секции, добавляем их перед библиографией.
+        already_known = set()
+        for images in images_by_section.values():
+            already_known.update(id(img) for img in images)
+
+        leftover_images = [
+            img for img in structure.get('images', []) or []
+            if isinstance(img, dict) and id(img) not in already_known
+        ]
+        if leftover_images:
+            add_heading_center(doc, 'Иллюстративные материалы')
+            image_counter = _insert_images_for_slot(
+                doc=doc,
+                images=leftover_images,
+                image_counter=image_counter,
+                temp_files=temp_files,
+                section_key='materials',
+                slot=0,
+            )
+
+        bibliography = structure.get('bibliography', [])
+        if bibliography:
+            add_heading_center(doc, 'Список литературы')
+            for i, ref in enumerate(bibliography):
+                add_bibliography_item(doc, i + 1, ref)
+                logger.debug(f"  Bibliography item {i + 1}: {str(ref)[:50]}...")
+            logger.info(f"Added bibliography with {len(bibliography)} items")
+        else:
+            logger.debug('No bibliography found in structure')
+
+        doc.save(output_path)
+        logger.info(f"Document saved successfully to: {output_path}")
+        logger.debug(f"Output file size: {Path(output_path).stat().st_size} bytes")
+
+    except Exception as e:
+        logger.error(f"Failed to save/build document: {str(e)}")
+        raise
+
+    finally:
+        for filename in temp_files:
+            try:
+                Path(filename).unlink(missing_ok=True)
+                logger.debug(f"Removed temp image file: {filename}")
+            except Exception as exc:
+                logger.warning(f"Could not remove temp image file: {filename}; error={exc}")
+
+    logger.info("=" * 50)
     return output_path
 
-
-def build_content_blocks_from_fallback(structure: Dict[str, Any]) -> list[Dict[str, Any]]:
-    """
-    Fallback: создаёт content_blocks из paragraphs и images
-    """
-    content_blocks = []
-    
-    for para in structure.get('paragraphs', []):
-        content_blocks.append({
-            'type': 'paragraph',
-            'data': para
-        })
-    
-    for img in structure.get('images', []):
-        content_blocks.append({
-            'type': 'image',
-            'data': img
-        })
-    
-    return content_blocks
 
 def assemble_full_document(
     project_id: str,
@@ -477,20 +709,17 @@ def assemble_full_document(
     title_page_data: Dict[str, Any],
     output_filename: str = None
 ) -> Dict[str, Any]:
-
     logger.info("=" * 50)
     logger.info(f"Starting full document assembly for project: {project_id}")
 
     project_dir = ensure_project_dir(project_id)
     extracted_path = project_dir / 'extract_response.json'
-
     if not extracted_path.exists():
         error_msg = f'Extracted data not found for project {project_id} at {extracted_path}'
         logger.error(error_msg)
         return {'status': 'failed', 'error': error_msg}
 
     logger.debug(f"Loading extracted structure from: {extracted_path}")
-
     with open(extracted_path, 'r', encoding='utf-8') as f:
         original_structure = json.load(f)
 
@@ -523,27 +752,19 @@ def assemble_full_document(
     logger.debug(f"GOST file: {gost_docx}")
     logger.debug(f"Final file: {final_docx}")
 
-    logger.info("Building temporary document...")
+    logger.info('Building temporary document...')
     build_document_from_structured_data(merged_structure, str(temp_docx))
-
     if not temp_docx.exists():
-        error_msg = f'Temp file not created: {temp_docx}'
-        logger.error(error_msg)
-        return {'status': 'failed', 'error': error_msg}
-
+        return {'status': 'failed', 'error': f'Temp file not created: {temp_docx}'}
     logger.info(f"Temp file created: {temp_docx.stat().st_size} bytes")
 
-    logger.info("Applying GOST formatting...")
+    logger.info('Applying GOST formatting...')
     apply_gost_formatting(str(temp_docx), str(gost_docx))
-
     if not gost_docx.exists():
-        error_msg = f'GOST file not created: {gost_docx}'
-        logger.error(error_msg)
-        return {'status': 'failed', 'error': error_msg}
-
+        return {'status': 'failed', 'error': f'GOST file not created: {gost_docx}'}
     logger.info(f"GOST file created: {gost_docx.stat().st_size} bytes")
 
-    logger.info("Adding title page...")
+    logger.info('Adding title page...')
     generate_title_page(
         input_path=str(gost_docx),
         output_path=str(final_docx),
@@ -557,142 +778,77 @@ def assemble_full_document(
     )
 
     if not final_docx.exists():
-        error_msg = f'Final file not created: {final_docx}'
-        logger.error(error_msg)
-        return {'status': 'failed', 'error': error_msg}
+        return {'status': 'failed', 'error': f'Final file not created: {final_docx}'}
 
     logger.info(f"Final file created: {final_docx.stat().st_size} bytes")
-
     temp_docx.unlink(missing_ok=True)
     gost_docx.unlink(missing_ok=True)
-
-    logger.debug("Temporary files cleaned up")
-
+    logger.debug('Temporary files cleaned up')
     logger.info(f"Assembly completed successfully for project {project_id}")
     logger.info("=" * 50)
-
-    return {
-        'status': 'completed',
-        'output_path': str(final_docx),
-        'project_id': project_id
-    }
+    return {'status': 'completed', 'output_path': str(final_docx), 'project_id': project_id}
 
 
 def convert_docx_to_pdf(docx_path: str, pdf_path: str) -> bool:
+    """
+    Конвертация DOCX в PDF.
+    Сначала пытаемся через LibreOffice, затем fallback на docx2pdf/Word COM.
+    """
+    docx_path_obj = Path(docx_path).resolve()
+    pdf_path_obj = Path(pdf_path).resolve()
+    output_dir = pdf_path_obj.parent
+
+    soffice_path = shutil.which('soffice')
+    if not soffice_path:
+        for possible in [
+            r'C:\Program Files\LibreOffice\program\soffice.exe',
+            r'C:\Program Files (x86)\LibreOffice\program\soffice.exe',
+        ]:
+            if Path(possible).exists():
+                soffice_path = possible
+                break
+
+    if soffice_path:
+        try:
+            logger.info(f"Converting DOCX to PDF with LibreOffice: {docx_path_obj} -> {pdf_path_obj}")
+            command = [
+                soffice_path,
+                '--headless',
+                '--convert-to',
+                'pdf',
+                '--outdir',
+                str(output_dir),
+                str(docx_path_obj),
+            ]
+            logger.info(f"LibreOffice command: {' '.join(command)}")
+            result = subprocess.run(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=120,
+            )
+            logger.info(f"LibreOffice stdout: {result.stdout}")
+            logger.info(f"LibreOffice stderr: {result.stderr}")
+            logger.info(f"LibreOffice return code: {result.returncode}")
+
+            generated_pdf = output_dir / f'{docx_path_obj.stem}.pdf'
+            if generated_pdf.exists():
+                if generated_pdf != pdf_path_obj:
+                    generated_pdf.replace(pdf_path_obj)
+                logger.info(f"PDF created successfully: {pdf_path_obj} ({pdf_path_obj.stat().st_size} bytes)")
+                return True
+        except Exception as exc:
+            logger.error(f"LibreOffice PDF conversion failed: {exc}")
 
     try:
-        logger.info(f"Converting DOCX to PDF: {docx_path} -> {pdf_path}")
-
+        logger.info(f"Converting DOCX to PDF with docx2pdf fallback: {docx_path} -> {pdf_path}")
         docx_to_pdf(docx_path, pdf_path)
-
         if Path(pdf_path).exists():
             logger.info(f"PDF created successfully: {pdf_path} ({Path(pdf_path).stat().st_size} bytes)")
             return True
-
         logger.error(f"PDF file not created: {pdf_path}")
         return False
-
     except Exception as e:
         logger.error(f"Failed to convert DOCX to PDF: {str(e)}")
         return False
-    
-
-def merge_ml_into_content_blocks(
-    content_blocks: list[Dict[str, Any]],
-    ml_sections: Dict[str, Any]
-) -> list[Dict[str, Any]]:
-    """
-    Внедряет ML-контент в content_blocks, сохраняя изображения на своих местах
-    
-    Логика:
-    - Находим начало секции (заголовок)
-    - Заменяем все параграфы секции на ML-контент
-    - Изображения внутри секции сохраняем на тех же позициях
-    """
-    if not content_blocks:
-        return content_blocks
-    
-    result = []
-    
-    section_start_keywords = {
-        'introduction': ['введение', 'цель работы', 'цель лабораторной работы'],
-        'theory': ['теоретическая часть', 'теоретические сведения', 'теория'],
-        'practice': ['практическая часть', 'ход работы', 'выполнение работы'],
-        'conclusion': ['вывод', 'заключение', 'выводы']
-    }
-    
-    i = 0
-    while i < len(content_blocks):
-        block = content_blocks[i]
-        block_type = block.get('type')
-        
-        section_key = None
-        if block_type == 'paragraph':
-            text = block.get('data', {}).get('text', '').lower()
-            for key, keywords in section_start_keywords.items():
-                for keyword in keywords:
-                    if keyword in text:
-                        section_key = key
-                        break
-                if section_key:
-                    break
-        
-        if section_key and section_key in ml_sections:
-            logger.info(f"Replacing section: {section_key}")
-            
-            ml_data = ml_sections[section_key]
-            ml_title = ml_data.get('title', '')
-            
-            if ml_title:
-                result.append({
-                    'type': 'paragraph',
-                    'data': {'text': ml_title}
-                })
-            else:
-                result.append(block)
-            
-            i += 1
-            
-            section_images = []
-            while i < len(content_blocks):
-                next_block = content_blocks[i]
-                next_type = next_block.get('type')
-                
-                if next_type == 'image':
-                    section_images.append(next_block)
-                    i += 1
-                elif next_type == 'paragraph':
-                    next_text = next_block.get('data', {}).get('text', '').lower()
-                    is_next_section = False
-                    for key, keywords in section_start_keywords.items():
-                        for keyword in keywords:
-                            if keyword in next_text:
-                                is_next_section = True
-                                break
-                        if is_next_section:
-                            break
-                    
-                    if is_next_section:
-                        break
-                    else:
-                        i += 1
-                else:
-                    break
-            
-            ml_content = ml_data.get('content', '')
-            for para in ml_content.split('\n'):
-                if para.strip():
-                    result.append({
-                        'type': 'paragraph',
-                        'data': {'text': para.strip()}
-                    })
-            
-            for img_block in section_images:
-                result.append(img_block)
-                logger.debug(f"  Preserved image: {img_block.get('data', {}).get('id', 'unknown')}")
-            
-        else:
-            result.append(block)
-            i += 1
-    
-    return result

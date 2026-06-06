@@ -70,7 +70,6 @@ def ensure_generated_captions(blocks: list) -> list:
     for i, block in enumerate(blocks):
         if isinstance(block, ImageBlock):
             if not block.caption:
-                # Найти описание из предыдущего параграфа
                 description = ""
                 for j in range(i - 1, -1, -1):
                     if isinstance(blocks[j], ParagraphBlock) and blocks[j].text.strip():
@@ -81,7 +80,6 @@ def ensure_generated_captions(blocks: list) -> list:
 
         elif isinstance(block, TableBlock):
             if not block.caption:
-                # Найти описание из предыдущего параграфа
                 description = ""
                 for j in range(i - 1, -1, -1):
                     if isinstance(blocks[j], ParagraphBlock) and blocks[j].text.strip():

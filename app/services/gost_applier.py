@@ -15,13 +15,11 @@ def apply_gost_formatting(docx_path: str, output_path: str) -> None:
     """
     doc = Document(docx_path)
 
-    # Установка шрифта и размера по умолчанию для всего документа
     for paragraph in doc.paragraphs:
         for run in paragraph.runs:
             run.font.name = settings.font_name
             run.font.size = Pt(settings.font_size_pt)
 
-    # Установка параметров абзацев
     for paragraph in doc.paragraphs:
         fmt = paragraph.paragraph_format
         fmt.line_spacing = settings.line_spacing
@@ -29,7 +27,6 @@ def apply_gost_formatting(docx_path: str, output_path: str) -> None:
         fmt.space_before = Pt(0)
         fmt.space_after = Pt(0)
 
-    # Установка полей страницы
     for section in doc.sections:
         section.top_margin = Cm(settings.margin_top_cm)
         section.bottom_margin = Cm(settings.margin_bottom_cm)
